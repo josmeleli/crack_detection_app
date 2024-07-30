@@ -16,7 +16,7 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     
     super.initState();
-    Timer(const Duration(milliseconds: 4000), () {
+    Timer(const Duration(milliseconds: 2000), () {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => const LoginPage()));
     });
