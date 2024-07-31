@@ -13,67 +13,101 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:Container(
-        padding: const EdgeInsets.only(bottom: 30),
-        child: Column(
-          children: <Widget>[
-            const HeaderContainer("Iniciar Sesión"),
-            Expanded(
-              flex: 1,
-              child: Container(
-                margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    _textInput(hint: "Correo", icon: Icons.email),
-                    _textInput(hint: "Contraseña", icon: Icons.vpn_key),
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      alignment: Alignment.centerRight,
-                      child: const Text(
-                        "Olvidaste tu contraseña?",
+      body: Form(
+        key: _formKey,
+        child: Container(
+          padding: const EdgeInsets.only(bottom: 30),
+          child: Column(
+            children: <Widget>[
+              const HeaderContainer("Iniciar Sesión"),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      _textInput(
+                        controller: _email,
+                        hint: "Correo",
+                        icon: Icons.email,
+                        validator: emailValidator,
                       ),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: ButtonWidget(
-                          onClick: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const RegPage()));
-                          },
-                          btnText: 'Iniciar Sesión',
+                      _textInput(
+                          controller: _password,
+                          hint: "Contraseña",
+                          icon: Icons.vpn_key,
+                          validator: (text) {
+                            if (text == null || text.trim().isEmpty) {
+                              return 'La contraseña está vacía';
+                            }
+                            return null;
+                          }, 
+                          obscureText: true,),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        alignment: Alignment.centerRight,
+                        child: const Text(
+                          "Olvidaste tu contraseña?",
                         ),
                       ),
-                    ),
-                    RichText(
-                      text: TextSpan(children: [
-                        const TextSpan(
-                          text: "No tienes una cuenta?",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        TextSpan(
-                          text: " Registrate",
-                          style: TextStyle(color: orangeColors),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const RegPage()));
+                      Expanded(
+                        child: Center(
+                          child: ButtonWidget(
+                            onClick: () {
+                              if (_formKey.currentState!.validate()) {
+                                print('validate is done');
+                                
+                              }
                             },
+                            btnText: 'Iniciar Sesión',
+                          ),
                         ),
-                      ]),
-                    ),
-                  ],
+                      ),
+                      RichText(
+                        text: TextSpan(children: [
+                          const TextSpan(
+                            text: "No tienes una cuenta?",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          TextSpan(
+                            text: " Registrate",
+                            style: TextStyle(color: orangeColors),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const RegPage()));
+                              },
+                          ),
+                        ]),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _textInput({controller, hint, icon}) {
+  Widget _textInput({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    String? Function(String?)? validator, // Agrega este parámetro opcional
+    bool obscureText = false,
+  }) {
     return Container(
       margin: const EdgeInsets.only(top: 10),
       decoration: const BoxDecoration(
@@ -90,7 +124,22 @@ class _LoginPageState extends State<LoginPage> {
               const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
           prefixIcon: Icon(icon),
         ),
+        validator: validator, // Agrega el validador aquí
+        obscureText: obscureText,
       ),
     );
   }
+  String? emailValidator(String? text) {
+  if (text == null || text.trim().isEmpty) {
+    return 'El correo está vacío';
+  }
+  final emailRegExp = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    caseSensitive: false,
+  );
+  if (!emailRegExp.hasMatch(text)) {
+    return 'El correo no es válido';
+  }
+  return null;
+}
 }
