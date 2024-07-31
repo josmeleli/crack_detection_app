@@ -4,6 +4,10 @@ import 'package:flutter_application_1/pages/regi_page.dart';
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
 import 'package:flutter_application_1/widgets/header_container.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import '../exception/auth_exception_handler.dart';
+import '../service/authentication_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,6 +20,22 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  void handleLogin(){
+    AuthenticationService()
+        .loginWithEmailAndPassword(
+      email: _email.text,
+      password: _password.text,
+    )
+        .then((status) {
+      if (status == AuthResultStatus.successful) {
+        Fluttertoast.showToast(msg: "Inicio de sesión exitoso");
+      } else {
+        final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+        Fluttertoast.showToast(msg: errorMsg);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +61,17 @@ class _LoginPageState extends State<LoginPage> {
                         validator: emailValidator,
                       ),
                       _textInput(
-                          controller: _password,
-                          hint: "Contraseña",
-                          icon: Icons.vpn_key,
-                          validator: (text) {
-                            if (text == null || text.trim().isEmpty) {
-                              return 'La contraseña está vacía';
-                            }
-                            return null;
-                          }, 
-                          obscureText: true,),
+                        controller: _password,
+                        hint: "Contraseña",
+                        icon: Icons.vpn_key,
+                        validator: (text) {
+                          if (text == null || text.trim().isEmpty) {
+                            return 'La contraseña está vacía';
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                      ),
                       Container(
                         margin: const EdgeInsets.only(top: 10),
                         alignment: Alignment.centerRight,
@@ -63,8 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: ButtonWidget(
                             onClick: () {
                               if (_formKey.currentState!.validate()) {
-                                print('validate is done');
-                                
+                                handleLogin();
                               }
                             },
                             btnText: 'Iniciar Sesión',
@@ -129,17 +149,18 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
   String? emailValidator(String? text) {
-  if (text == null || text.trim().isEmpty) {
-    return 'El correo está vacío';
+    if (text == null || text.trim().isEmpty) {
+      return 'El correo está vacío';
+    }
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+      caseSensitive: false,
+    );
+    if (!emailRegExp.hasMatch(text)) {
+      return 'El correo no es válido';
+    }
+    return null;
   }
-  final emailRegExp = RegExp(
-    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    caseSensitive: false,
-  );
-  if (!emailRegExp.hasMatch(text)) {
-    return 'El correo no es válido';
-  }
-  return null;
-}
 }
