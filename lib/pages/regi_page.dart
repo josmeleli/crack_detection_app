@@ -20,7 +20,7 @@ class _RegPageState extends State<RegPage> {
         padding: const EdgeInsets.only(bottom: 30),
         child: Column(
           children: <Widget>[
-            HeaderContainer("Registrarse"),
+            const HeaderContainer("Registrarse"),
             Expanded(
               flex: 1,
               child: Container(

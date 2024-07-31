@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/utils/color.dart';
 
 class HeaderContainer extends StatelessWidget {
-  var text = "Iniciar Sesión";
-  HeaderContainer(this.text, {super.key});
+  final String text;
+  const HeaderContainer(this.text, {super.key});
   @override
   Widget build(BuildContext context) {
     return Container(

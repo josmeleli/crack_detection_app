@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.only(bottom: 30),
         child: Column(
           children: <Widget>[
-            HeaderContainer("Iniciar Sesión"),
+            const HeaderContainer("Iniciar Sesión"),
             Expanded(
               flex: 1,
               child: Container(
