@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/pages/splash_page.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -14,7 +14,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,7 +23,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashPage(),
+      home: const SplashPage(), // Usa un widget para manejar la lógica de redirección
     );
   }
 }
+
+
+

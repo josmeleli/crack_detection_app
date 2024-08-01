@@ -23,8 +23,8 @@ class AuthenticationService{
       }
       return status;
       
-    } catch(e){
-      status = AuthExceptionHandler.handleException(e);
+    } catch(msg){
+      status = AuthExceptionHandler.handleException(msg);
     }
     return status;
   }
