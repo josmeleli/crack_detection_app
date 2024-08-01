@@ -1,16 +1,20 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/regi_page.dart';
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
 import 'package:flutter_application_1/widgets/header_container.dart';
+import 'package:flutter_application_1/widgets/loading_dialog.dart';
+import 'package:flutter_application_1/widgets/text_input.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_application_1/validation/input_validation.dart';
 
 import '../exception/auth_exception_handler.dart';
 import '../service/authentication_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final void Function() onPressed;
+
+  const LoginPage({super.key, required this.onPressed});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -22,12 +26,16 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   void handleLogin(){
+
+    LoadingDialog.showLoadingDialog(context, 'Iniciando sesión...');
+
     AuthenticationService()
         .loginWithEmailAndPassword(
       email: _email.text,
       password: _password.text,
     )
         .then((status) {
+          LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
         Fluttertoast.showToast(msg: "Inicio de sesión exitoso");
       } else {
@@ -54,22 +62,17 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                      _textInput(
+                      textInput(
                         controller: _email,
                         hint: "Correo",
                         icon: Icons.email,
                         validator: emailValidator,
                       ),
-                      _textInput(
+                      textInput(
                         controller: _password,
                         hint: "Contraseña",
                         icon: Icons.vpn_key,
-                        validator: (text) {
-                          if (text == null || text.trim().isEmpty) {
-                            return 'La contraseña está vacía';
-                          }
-                          return null;
-                        },
+                        validator: passwordValidator,
                         obscureText: true,
                       ),
                       Container(
@@ -98,15 +101,11 @@ class _LoginPageState extends State<LoginPage> {
                             style: TextStyle(color: Colors.black),
                           ),
                           TextSpan(
+                            
                             text: " Registrate",
                             style: TextStyle(color: orangeColors),
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const RegPage()));
-                              },
+                              ..onTap = widget.onPressed,
                           ),
                         ]),
                       ),
@@ -121,46 +120,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _textInput({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    String? Function(String?)? validator, // Agrega este parámetro opcional
-    bool obscureText = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-        color: Colors.white,
-      ),
-      padding: const EdgeInsets.only(left: 10),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
-          prefixIcon: Icon(icon),
-        ),
-        validator: validator, // Agrega el validador aquí
-        obscureText: obscureText,
-      ),
-    );
-  }
-
-  String? emailValidator(String? text) {
-    if (text == null || text.trim().isEmpty) {
-      return 'El correo está vacío';
-    }
-    final emailRegExp = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-      caseSensitive: false,
-    );
-    if (!emailRegExp.hasMatch(text)) {
-      return 'El correo no es válido';
-    }
-    return null;
-  }
 }
