@@ -77,7 +77,7 @@ class _RegPageState extends State<RegPage> {
                           }
                         },
                       ),
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 20),
                       RichText(
                         text: TextSpan(children: [
                           const TextSpan(

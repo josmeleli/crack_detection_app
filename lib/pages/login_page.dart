@@ -25,17 +25,15 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void handleLogin(){
-
+  void handleLogin() {
     LoadingDialog.showLoadingDialog(context, 'Iniciando sesión...');
 
     AuthenticationService()
         .loginWithEmailAndPassword(
       email: _email.text,
       password: _password.text,
-    )
-        .then((status) {
-          LoadingDialog.hideLoadingDialog(context);
+    ).then((status) {
+      LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
         Fluttertoast.showToast(msg: "Inicio de sesión exitoso");
       } else {
@@ -48,69 +46,60 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: Container(
-          padding: const EdgeInsets.only(bottom: 20),
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
           child: Column(
             children: <Widget>[
               const HeaderContainer("Iniciar Sesión"),
-              Expanded(
-                flex: 1,
-                child: Container(
-                  margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      textInput(
-                        controller: _email,
-                        hint: "Correo",
-                        icon: Icons.email,
-                        validator: emailValidator,
-                      ),
-                      textInput(
-                        controller: _password,
-                        hint: "Contraseña",
-                        icon: Icons.vpn_key,
-                        validator: passwordValidator,
-                        obscureText: true,
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        alignment: Alignment.centerRight,
-                        child: const Text(
-                          "Olvidaste tu contraseña?",
+              Container(
+                margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
+                child: Column(
+                  children: <Widget>[
+                    textInput(
+                      controller: _email,
+                      hint: "Correo",
+                      icon: Icons.email,
+                      validator: emailValidator,
+                    ),
+                    textInput(
+                      controller: _password,
+                      hint: "Contraseña",
+                      icon: Icons.vpn_key,
+                      validator: passwordValidator,
+                      obscureText: true,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      alignment: Alignment.centerRight,
+                      child: const Text("Olvidaste tu contraseña?"),
+                    ),
+                    const SizedBox(height: 100),
+                    ButtonWidget(
+                      onClick: () {
+                        if (_formKey.currentState!.validate()) {
+                          handleLogin();
+                        }
+                      },
+                      btnText: 'Iniciar Sesión',
+                    ),
+                    const SizedBox(height: 20),
+                    RichText(
+                      text: TextSpan(children: [
+                        const TextSpan(
+                          text: "No tienes una cuenta?",
+                          style: TextStyle(color: Colors.black),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: ButtonWidget(
-                            onClick: () {
-                              if (_formKey.currentState!.validate()) {
-                                handleLogin();
-                              }
-                            },
-                            btnText: 'Iniciar Sesión',
-                          ),
+                        TextSpan(
+                          text: " Registrate",
+                          style: TextStyle(color: orangeColors),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = widget.onPressed,
                         ),
-                      ),
-                      RichText(
-                        text: TextSpan(children: [
-                          const TextSpan(
-                            text: "No tienes una cuenta?",
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          TextSpan(
-                            
-                            text: " Registrate",
-                            style: TextStyle(color: orangeColors),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = widget.onPressed,
-                          ),
-                        ]),
-                      ),
-                    ],
-                  ),
+                      ]),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
             ],
@@ -119,5 +108,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 }
