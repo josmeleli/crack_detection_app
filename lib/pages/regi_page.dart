@@ -26,7 +26,7 @@ class _RegPageState extends State<RegPage> {
   final TextEditingController _confirmPassword = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void handleSingUp() {
+  void handleSignUp() {
     LoadingDialog.showLoadingDialog(context, 'Registrando...');
     AuthenticationService()
         .signUpWithEmailAndPassword(
@@ -50,16 +50,15 @@ class _RegPageState extends State<RegPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: Container(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            children: <Widget>[
-              const HeaderContainer("Registrarse"),
-              Expanded(
-                flex: 1,
-                child: Container(
+      body: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Container(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Column(
+              children: <Widget>[
+                const HeaderContainer("Registrarse"),
+                Container(
                   margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
@@ -69,18 +68,16 @@ class _RegPageState extends State<RegPage> {
                       textInput(controller: _phone ,hint: "Teléfono", icon: Icons.call, validator: phoneValidator),
                       textInput(controller: _password ,hint: "Contraseña", icon: Icons.vpn_key, validator: passwordValidator, obscureText: true),
                       textInput(controller: _confirmPassword,hint: "Confirmar Contraseña", icon: Icons.vpn_key, validator: (text) => confirmPasswordValidator(text, _password.text), obscureText: true),
-                      Expanded(
-                        child: Center(
-                          child: ButtonWidget(
-                            btnText: 'Registrar',
-                            onClick: () {
-                              if (_formKey.currentState!.validate()) {
-                                handleSingUp();
-                              }
-                            },
-                          ),
-                        ),
+                      SizedBox(height: 20),
+                      ButtonWidget(
+                        btnText: 'Registrar',
+                        onClick: () {
+                          if (_formKey.currentState!.validate()) {
+                            handleSignUp();
+                          }
+                        },
                       ),
+                      const SizedBox(height: 60),
                       RichText(
                         text: TextSpan(children: [
                           const TextSpan(
@@ -94,17 +91,15 @@ class _RegPageState extends State<RegPage> {
                               ..onTap = widget.onPressed,
                           )
                         ]),
-                      )
+                      ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
-  
 }

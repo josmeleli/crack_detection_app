@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Form(
         key: _formKey,
         child: Container(
-          padding: const EdgeInsets.only(bottom: 30),
+          padding: const EdgeInsets.only(bottom: 20),
           child: Column(
             children: <Widget>[
               const HeaderContainer("Iniciar Sesión"),
