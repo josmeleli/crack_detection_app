@@ -21,7 +21,7 @@ class ButtonWidgetState extends State<ButtonWidget> {
         height: 70,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-              colors: [orangeColors, orangeLightColors],
+              colors: [primaryColor, secondaryColor],
               end: Alignment.centerLeft,
               begin: Alignment.centerRight),
           borderRadius: const BorderRadius.all(

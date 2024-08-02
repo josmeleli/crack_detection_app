@@ -86,7 +86,7 @@ class _RegPageState extends State<RegPage> {
                           ),
                           TextSpan(
                             text: " Iniciar Sesión",
-                            style: TextStyle(color: orangeColors),
+                            style: TextStyle(color: primaryColor),
                             recognizer: TapGestureRecognizer()
                               ..onTap = widget.onPressed,
                           )

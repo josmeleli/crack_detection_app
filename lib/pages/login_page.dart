@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         TextSpan(
                           text: " Registrate",
-                          style: TextStyle(color: orangeColors),
+                          style: TextStyle(color: primaryColor),
                           recognizer: TapGestureRecognizer()
                             ..onTap = widget.onPressed,
                         ),

@@ -29,7 +29,7 @@ class NavigationMenu extends StatelessWidget {
             NavigationDestination(icon: Icon(Icons.assessment), label: 'Resultados'),
             NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
           ],
-          indicatorColor: orangeLightColors,
+          indicatorColor: secondaryColor,
           
         ),
       ),
