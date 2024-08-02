@@ -68,7 +68,7 @@ class _RegPageState extends State<RegPage> {
                       textInput(controller: _phone ,hint: "Teléfono", icon: Icons.call, validator: phoneValidator),
                       textInput(controller: _password ,hint: "Contraseña", icon: Icons.vpn_key, validator: passwordValidator, obscureText: true),
                       textInput(controller: _confirmPassword,hint: "Confirmar Contraseña", icon: Icons.vpn_key, validator: (text) => confirmPasswordValidator(text, _password.text), obscureText: true),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ButtonWidget(
                         btnText: 'Registrar',
                         onClick: () {
