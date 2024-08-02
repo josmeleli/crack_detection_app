@@ -25,7 +25,7 @@ class NavigationMenu extends StatelessWidget {
           },
           destinations: const [
             NavigationDestination(icon: Icon(Icons.info), label: 'Instrucciones'),
-            NavigationDestination(icon: Icon(Icons.search), label: 'Detectar'),
+            NavigationDestination(icon: Icon(Icons.add), label: 'Detectar'),
             NavigationDestination(icon: Icon(Icons.assessment), label: 'Resultados'),
             NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
           ],

@@ -10,8 +10,35 @@ class InfoPage extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'Instrucciones',
       ),
-      body: Center(
-        child: Text('Aquí van las instrucciones.'),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('1. Primero, ve a la interfaz de detección.'),
+                Image(image: AssetImage('assets/images/info2.png'), width: 250,), 
+                SizedBox(height: 20),
+
+                Text('2. Luego abre la cámara o sube una imagen (asegúrate de capturar una imagen nítida); si te equivocaste, simplemente vuelve a capturarla.'),
+                Image(image: AssetImage('assets/images/info2.png'), width: 250,), 
+                SizedBox(height: 20),
+
+                Text('3. Después, la imagen se cargará y podrás presionar el botón "Detectar".'),
+                Image(image: AssetImage('assets/images/info2.png'), width: 250,), 
+                SizedBox(height: 20),
+                Text('4. Finalmente, al presionar "Detectar", la imagen se almacenará en la interfaz resultados, donde podrás hacer clic para verla en detalle.'),
+                Image(image: AssetImage('assets/images/info2.png'), width: 250,), 
+                SizedBox(height: 20),
+                Text('Importante: La detección se divide en niveles de riesgo de alto a bajo dependiendo el ancho de la grieta.'),
+              
+
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
