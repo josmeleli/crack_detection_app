@@ -3,6 +3,7 @@ import 'package:flutter_application_1/pages/detection_page.dart';
 import 'package:flutter_application_1/pages/info_page.dart';
 import 'package:flutter_application_1/pages/profile_page.dart';
 import 'package:flutter_application_1/pages/results_page.dart';
+import 'package:flutter_application_1/utils/color.dart';
 import 'package:get/get.dart';
 
 class NavigationMenu extends StatelessWidget {
@@ -28,6 +29,8 @@ class NavigationMenu extends StatelessWidget {
             NavigationDestination(icon: Icon(Icons.assessment), label: 'Resultados'),
             NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
           ],
+          indicatorColor: orangeLightColors,
+          
         ),
       ),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
