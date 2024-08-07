@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 Widget textInput({
   required TextEditingController controller,
@@ -6,6 +7,7 @@ Widget textInput({
   required IconData icon,
   String? Function(String?)? validator, // Agrega este parámetro opcional
   bool obscureText = false,
+  List<TextInputFormatter>? inputFormatters,
 }) {
   return Container(
     margin: const EdgeInsets.only(top: 10),
@@ -25,6 +27,8 @@ Widget textInput({
       ),
       validator: validator, // Agrega el validador aquí
       obscureText: obscureText,
+      inputFormatters: inputFormatters,
+      
     ),
   );
 }

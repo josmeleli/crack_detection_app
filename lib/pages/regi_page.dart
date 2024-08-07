@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_1/service/authentication_service.dart';
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/validation/input_validation.dart';
@@ -63,9 +64,9 @@ class _RegPageState extends State<RegPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                      textInput(controller: _name ,hint: "Nombre Completo", icon: Icons.person, validator: nameValidator),
-                      textInput(controller: _email ,hint: "Correo", icon: Icons.email, validator: emailValidator),
-                      textInput(controller: _phone ,hint: "Teléfono", icon: Icons.call, validator: phoneValidator),
+                      textInput(controller: _name ,hint: "Nombre Completo", icon: Icons.person, validator: nameValidator,),
+                      textInput(controller: _email ,hint: "Correo", icon: Icons.email, validator: emailValidator, inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\s"))]),
+                      textInput(controller: _phone ,hint: "Teléfono", icon: Icons.call, validator: phoneValidator, inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)]),
                       textInput(controller: _password ,hint: "Contraseña", icon: Icons.vpn_key, validator: passwordValidator, obscureText: true),
                       textInput(controller: _confirmPassword,hint: "Confirmar Contraseña", icon: Icons.vpn_key, validator: (text) => confirmPasswordValidator(text, _password.text), obscureText: true),
                       const SizedBox(height: 20),

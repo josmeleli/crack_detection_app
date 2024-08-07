@@ -33,6 +33,11 @@ String? nameValidator(String? text) {
   if (text == null || text.trim().isEmpty) {
     return 'El nombre está vacío';
   }
+  // Permitir letras, espacios y tildes
+  final RegExp nameExp = RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$');
+  if (!nameExp.hasMatch(text)) {
+    return 'Por favor ingrese un nombre válido';
+  }
   return null;
 }
 

@@ -50,8 +50,6 @@ class AuthenticationService{
           name: name,
           email: email,
           phone: phone,
-          password: password,
-          confirmPassword: confirmPassword,
           userId: authResult.user!.uid,
         );
         status = AuthResultStatus.successful;
@@ -66,14 +64,12 @@ class AuthenticationService{
     return status;
   }
 
-  void _saveUserDetails({required String name, email, phone, password, confirmPassword, userId}){
+  void _saveUserDetails({required String name, email, phone, userId}){
     // Save user data to Firestore
     FirebaseFirestore.instance.collection('users').doc(userId).set({
       'name': name,
       'email': email,
       'phone': phone,
-      'password': password,
-      'confirmPassword': confirmPassword,
       'userId': userId,
     });
   }
