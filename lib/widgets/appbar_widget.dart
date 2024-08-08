@@ -4,14 +4,14 @@ import 'package:flutter_application_1/utils/color.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final bool showLogoutButton; // Parámetro opcional
-  final bool automaticallyImplyLeading; // Nuevo parámetro opcional
+  final bool showLogoutButton; 
+  final bool automaticallyImplyLeading; 
 
   const CustomAppBar({
     super.key,
     required this.title,
-    this.showLogoutButton = true, // Valor por defecto
-    this.automaticallyImplyLeading = false, // Valor por defecto
+    this.showLogoutButton = true, 
+    this.automaticallyImplyLeading = false, 
   });
 
   @override
@@ -20,24 +20,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: const TextStyle(
-          color: Colors.white, // Cambia el color del título aquí
+          color: Colors.white, 
         ),
       ),
-      automaticallyImplyLeading: automaticallyImplyLeading, // Usar el nuevo parámetro
+      automaticallyImplyLeading: automaticallyImplyLeading, 
       backgroundColor: primaryColor,
+      iconTheme: const IconThemeData(
+        color: Colors.white, 
+      ),
       actions: showLogoutButton
           ? [
               IconButton(
                 icon: const Icon(
                   Icons.logout,
-                  color: Colors.white, // Cambia el color del icono aquí
+                  color: Colors.white, 
                 ),
                 onPressed: () async {
-                  await FirebaseAuth.instance.signOut(); // Cierra la sesión
+                  await FirebaseAuth.instance.signOut(); 
                 },
               ),
             ]
-          : null, // No mostrar acciones si showLogoutButton es false
+          : null, 
     );
   }
 
