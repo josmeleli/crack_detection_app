@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/forgot_pw_page.dart';
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
 import 'package:flutter_application_1/widgets/header_container.dart';
@@ -32,7 +33,8 @@ class _LoginPageState extends State<LoginPage> {
         .loginWithEmailAndPassword(
       email: _email.text,
       password: _password.text,
-    ).then((status) {
+    )
+        .then((status) {
       LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
         Fluttertoast.showToast(msg: "Inicio de sesión exitoso");
@@ -72,7 +74,20 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       margin: const EdgeInsets.only(top: 10),
                       alignment: Alignment.centerRight,
-                      child: const Text("Olvidaste tu contraseña?"),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordPage()),
+                          );
+                        },
+                        child: Text(
+                          "Olvidaste tu contraseña?",
+                          style: TextStyle(color: primaryColor),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 100),
                     ButtonWidget(

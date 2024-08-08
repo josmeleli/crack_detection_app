@@ -73,4 +73,16 @@ class AuthenticationService{
       'userId': userId,
     });
   }
+
+
+  // forgot password
+  Future<AuthResultStatus> forgotPassword({required String email}) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      status = AuthResultStatus.successful;
+    } catch(msg){
+      status = AuthExceptionHandler.handleException(msg);
+    }
+    return status;
+  }
 }
