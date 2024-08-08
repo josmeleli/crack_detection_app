@@ -4,8 +4,14 @@ import 'package:flutter_application_1/utils/color.dart';
 class ButtonWidget extends StatefulWidget {
   final String btnText;
   final VoidCallback? onClick;
+  final IconData? icon; // Icono opcional
 
-  const ButtonWidget({super.key, required this.btnText, this.onClick});
+  const ButtonWidget({
+    super.key,
+    required this.btnText,
+    this.onClick,
+    this.icon, // Inicializar el icono opcional
+  });
 
   @override
   ButtonWidgetState createState() => ButtonWidgetState();
@@ -21,18 +27,31 @@ class ButtonWidgetState extends State<ButtonWidget> {
         height: 70,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-              colors: [primaryColor, secondaryColor],
-              end: Alignment.centerLeft,
-              begin: Alignment.centerRight),
+            colors: [primaryColor, secondaryColor],
+            end: Alignment.centerLeft,
+            begin: Alignment.centerRight,
+          ),
           borderRadius: const BorderRadius.all(
             Radius.circular(100),
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
-          widget.btnText,
-          style: const TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.icon != null) ...[
+              Icon(widget.icon, color: Colors.white),
+              const SizedBox(width: 8), // Espacio entre el icono y el texto
+            ],
+            Text(
+              widget.btnText,
+              style: const TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
