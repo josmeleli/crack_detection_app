@@ -1,9 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/appbar_widget.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
-class DetectionPage extends StatelessWidget {
+class DetectionPage extends StatefulWidget {
   const DetectionPage({super.key});
+
+  @override
+  DetectionPageState createState() => DetectionPageState();
+}
+
+class DetectionPageState extends State<DetectionPage> {
+  XFile? _image;
+
+  Future<void> _pickImage() async {
+    // Solicitar permisos de acceso a imágenes
+    if (await Permission.photos.request().isGranted) {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null && mounted) {
+        setState(() {
+          _image = image;
+        });
+      }
+    } else if (mounted) {
+      // Manejar el caso en que los permisos no son concedidos
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permiso de acceso a imágenes denegado')),
+      );
+    }
+  }
+
+  Future<void> _openCamera() async {
+    // Solicitar permisos de cámara
+    if (await Permission.camera.request().isGranted) {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+      if (image != null && mounted) {
+        setState(() {
+          _image = image;
+        });
+      }
+    } else if (mounted) {
+      // Manejar el caso en que los permisos no son concedidos
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permiso de cámara denegado')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +77,12 @@ class DetectionPage extends StatelessWidget {
                         width: containerWidth, // Hacer el contenedor más pequeño
                         height: containerWidth, // Hacer el contenedor cuadrado
                         color: const Color(0xFFF4F4F4), // Color ahuesado
-                        child: const Center(
-                          child: Text('Imagen aquí'),
-                        ),
+                        child: _image == null
+                            ? const Center(child: Text('Imagen aquí'))
+                            : Image.file(
+                                File(_image!.path),
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 8.0),
@@ -53,9 +104,7 @@ class DetectionPage extends StatelessWidget {
                 width: containerWidth,
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
-                  onClick: () {
-                    // Lógica para abrir la cámara
-                  },
+                  onClick: _openCamera,
                   btnText: 'Abrir Cámara',
                   icon: Icons.camera_alt,
                 ),
@@ -64,9 +113,7 @@ class DetectionPage extends StatelessWidget {
                 width: containerWidth,
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
-                  onClick: () {
-                    // Lógica para subir una imagen
-                  },
+                  onClick: _pickImage,
                   btnText: 'Subir Imagen',
                   icon: Icons.upload_file,
                 ),

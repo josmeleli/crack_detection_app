@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+<string>Tu mensaje explicativo para el acceso a la cámara</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Tu mensaje explicativo para el acceso a la galería</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Tu mensaje explicativo para agregar fotos a la galería</string>
 </dict>
 </plist>
