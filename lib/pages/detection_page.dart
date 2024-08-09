@@ -16,20 +16,33 @@ class DetectionPageState extends State<DetectionPage> {
   XFile? _image;
 
   Future<void> _pickImage() async {
-    // Solicitar permisos de acceso a imágenes
-    if (await Permission.photos.request().isGranted) {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    // Verifica la versión de Android
+    final bool isAndroid = Platform.isAndroid;
 
-      if (image != null && mounted) {
-        setState(() {
-          _image = image;
-        });
+    if (isAndroid) {
+      // Solicita permisos según la versión de Android
+      if (await Permission.photos.request().isGranted ||
+          await Permission.storage.request().isGranted) {
+        final ImagePicker picker = ImagePicker();
+        final XFile? image =
+            await picker.pickImage(source: ImageSource.gallery);
+
+        if (image != null && mounted) {
+          setState(() {
+            _image = image;
+          });
+        }
+      } else if (mounted) {
+        // Maneja el caso en que los permisos no son concedidos
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Permiso de acceso a imágenes denegado')),
+        );
       }
-    } else if (mounted) {
-      // Manejar el caso en que los permisos no son concedidos
+    } else {
+      // Maneja el caso para otras plataformas si es necesario
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permiso de acceso a imágenes denegado')),
+        const SnackBar(content: Text('No soportado en esta plataforma')),
       );
     }
   }
@@ -72,9 +85,11 @@ class DetectionPageState extends State<DetectionPage> {
                 child: Column(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0), // Bordes redondeados
+                      borderRadius:
+                          BorderRadius.circular(16.0), // Bordes redondeados
                       child: Container(
-                        width: containerWidth, // Hacer el contenedor más pequeño
+                        width:
+                            containerWidth, // Hacer el contenedor más pequeño
                         height: containerWidth, // Hacer el contenedor cuadrado
                         color: const Color(0xFFF4F4F4), // Color ahuesado
                         child: _image == null
