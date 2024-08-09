@@ -16,35 +16,34 @@ class DetectionPageState extends State<DetectionPage> {
   XFile? _image;
 
   Future<void> _pickImage() async {
-    // Verifica la versión de Android
-    final bool isAndroid = Platform.isAndroid;
+    final hasPermission = await _checkPermissions();
 
-    if (isAndroid) {
-      // Solicita permisos según la versión de Android
-      if (await Permission.photos.request().isGranted ||
-          await Permission.storage.request().isGranted) {
-        final ImagePicker picker = ImagePicker();
-        final XFile? image =
-            await picker.pickImage(source: ImageSource.gallery);
+    if (hasPermission) {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-        if (image != null && mounted) {
-          setState(() {
-            _image = image;
-          });
-        }
-      } else if (mounted) {
-        // Maneja el caso en que los permisos no son concedidos
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Permiso de acceso a imágenes denegado')),
-        );
+      if (image != null && mounted) {
+        setState(() {
+          _image = image;
+        });
       }
-    } else {
-      // Maneja el caso para otras plataformas si es necesario
+    } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No soportado en esta plataforma')),
+        const SnackBar(content: Text('Permiso de acceso a imágenes denegado')),
       );
     }
+  }
+
+  Future<bool> _checkPermissions() async {
+    if (Platform.isAndroid) {
+      // En Android, revisa los permisos de fotos y almacenamiento
+      return await Permission.photos.request().isGranted ||
+          await Permission.storage.request().isGranted;
+    } else if (Platform.isIOS) {
+      // En iOS, solo revisa el permiso de fotos
+      return await Permission.photos.request().isGranted;
+    }
+    return false;
   }
 
   Future<void> _openCamera() async {
