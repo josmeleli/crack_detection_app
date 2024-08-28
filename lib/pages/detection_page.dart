@@ -20,6 +20,7 @@ class DetectionPage extends StatefulWidget {
 
 class DetectionPageState extends State<DetectionPage> {
   XFile? _image;
+  final double diametroEnMm = 66.00;
 
   Future<void> _sendImageToAPI(BuildContext context) async {
     if (_image != null) {
@@ -55,10 +56,13 @@ class DetectionPageState extends State<DetectionPage> {
 
               // Verifica que las claves existan y no sean nulas
               if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
-                double maxCrackWidth = decodedData['max_crack_width'];
+                double maxCrackWidthPx = decodedData['max_crack_width'];
+
+                // Calcula el ancho de la grieta en milímetros
+                double maxCrackWidthMm = maxCrackWidthPx * (diametroEnMm / circleDiameter);
 
                 // Envía los resultados a Firestore
-                await _sendResultsToFirestore(userId, maxCrackWidth, imageUrl);
+                await _sendResultsToFirestore(userId, maxCrackWidthMm, imageUrl);
 
                 // Cierra el cuadro de diálogo de carga
                 Navigator.of(context).pop();
