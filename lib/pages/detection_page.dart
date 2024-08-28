@@ -38,15 +38,15 @@ class DetectionPageState extends State<DetectionPage> {
             final userId = user.uid;
 
             // Subir la imagen a Firebase Storage
-            final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
+            final imageUrl =
+                await _uploadImageToFirebaseStorage(userId, _image!);
 
             // Prepara la imagen para el envío
             var request = http.MultipartRequest(
-              'POST',
-              Uri.parse('http://10.0.2.2:8000/predict/')
-            );
+                'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
 
-            request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+            request.files
+                .add(await http.MultipartFile.fromPath('file', _image!.path));
 
             var response = await request.send();
 
@@ -55,20 +55,24 @@ class DetectionPageState extends State<DetectionPage> {
               final decodedData = json.decode(responseData);
 
               // Verifica que las claves existan y no sean nulas
-              if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
+              if (decodedData.containsKey('max_crack_width') &&
+                  decodedData['max_crack_width'] != null) {
                 double maxCrackWidthPx = decodedData['max_crack_width'];
 
                 // Calcula el ancho de la grieta en milímetros
-                double maxCrackWidthMm = maxCrackWidthPx * (diametroEnMm / circleDiameter);
+                double maxCrackWidthMm =
+                    maxCrackWidthPx * (diametroEnMm / circleDiameter);
 
                 // Envía los resultados a Firestore
-                await _sendResultsToFirestore(userId, maxCrackWidthMm, imageUrl);
+                await _sendResultsToFirestore(
+                    userId, maxCrackWidthMm, imageUrl);
 
                 // Cierra el cuadro de diálogo de carga
                 Navigator.of(context).pop();
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Resultados enviados exitosamente')),
+                  const SnackBar(
+                      content: Text('Resultados enviados exitosamente')),
                 );
               } else {
                 // Cierra el cuadro de diálogo de carga
@@ -96,7 +100,8 @@ class DetectionPageState extends State<DetectionPage> {
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se detectó un círculo rojo en la imagen')),
+            const SnackBar(
+                content: Text('No se detectó un círculo rojo en la imagen')),
           );
         }
       } catch (e) {
@@ -115,9 +120,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
       var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('http://10.0.2.2:8000/detectar-circulos/')
-      );
+          'POST', Uri.parse('http://10.0.2.2:8000/detectar-circulos/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
@@ -127,7 +130,8 @@ class DetectionPageState extends State<DetectionPage> {
         final responseData = await response.stream.bytesToString();
         final decodedData = json.decode(responseData);
 
-        if (decodedData.containsKey('message') && decodedData['message'] != null) {
+        if (decodedData.containsKey('message') &&
+            decodedData['message'] != null) {
           final message = decodedData['message'];
           final regex = RegExp(r'(\d+)');
           final match = regex.firstMatch(message);
@@ -145,9 +149,11 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+  Future<String> _uploadImageToFirebaseStorage(
+      String userId, XFile image) async {
     try {
-      final storageRef = FirebaseStorage.instance.ref().child('users/$userId/${image.name}');
+      final storageRef =
+          FirebaseStorage.instance.ref().child('users/$userId/${image.name}');
       final uploadTask = storageRef.putFile(File(image.path));
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -158,22 +164,28 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth, String imageUrl) async {
+  Future<void> _sendResultsToFirestore(
+      String userId, double maxCrackWidth, String imageUrl) async {
     try {
+      // Redondea el ancho de la grieta a dos decimales
+      double maxCrackWidthRounded =
+          double.parse(maxCrackWidth.toStringAsFixed(2));
+
       // Crea una nueva referencia de documento para almacenar los resultados
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .collection('results')
           .add({
-        'max_crack_width': maxCrackWidth,
+        'max_crack_width': maxCrackWidthRounded,
         'image_url': imageUrl,
         'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
       });
     } catch (e) {
       print("Error al enviar los resultados a Firestore: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al guardar los resultados en Firestore')),
+        const SnackBar(
+            content: Text('Error al guardar los resultados en Firestore')),
       );
     }
   }
