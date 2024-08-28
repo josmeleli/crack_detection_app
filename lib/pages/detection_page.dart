@@ -56,10 +56,9 @@ class DetectionPageState extends State<DetectionPage> {
               // Verifica que las claves existan y no sean nulas
               if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
                 double maxCrackWidth = decodedData['max_crack_width'];
-                String maxCrackWidthStr = maxCrackWidth.toStringAsFixed(2);
 
                 // Envía los resultados a Firestore
-                await _sendResultsToFirestore(userId, maxCrackWidthStr, imageUrl);
+                await _sendResultsToFirestore(userId, maxCrackWidth, imageUrl);
 
                 // Cierra el cuadro de diálogo de carga
                 Navigator.of(context).pop();
@@ -161,7 +160,7 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<void> _sendResultsToFirestore(String userId, String maxCrackWidth, String imageUrl) async {
+  Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth, String imageUrl) async {
     try {
       // Crea una nueva referencia de documento para almacenar los resultados
       await FirebaseFirestore.instance
