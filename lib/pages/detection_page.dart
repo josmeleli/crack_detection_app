@@ -35,40 +35,52 @@ class DetectionPageState extends State<DetectionPage> {
           // Subir la imagen a Firebase Storage
           final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
 
-          // Prepara la imagen para el envío
-          var request = http.MultipartRequest(
-            'POST',
-            Uri.parse('http://10.0.2.2:8000/predict/')
-          );
+          // Detectar el diámetro del círculo rojo
+          final circleDiameter = await _detectCircleDiameter(_image!);
 
-          request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+          if (circleDiameter != null) {
+            // Prepara la imagen para el envío
+            var request = http.MultipartRequest(
+              'POST',
+              Uri.parse('http://10.0.2.2:8000/predict/')
+            );
 
-          var response = await request.send();
+            request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
 
-          if (response.statusCode == 200) {
-            final responseData = await response.stream.bytesToString();
-            final decodedData = json.decode(responseData);
+            var response = await request.send();
 
-            // Verifica que las claves existan y no sean nulas
-            if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
-              double maxCrackWidth = decodedData['max_crack_width'];
-              String maxCrackWidthStr = maxCrackWidth.toStringAsFixed(2);
+            if (response.statusCode == 200) {
+              final responseData = await response.stream.bytesToString();
+              final decodedData = json.decode(responseData);
 
-              // Envía los resultados a Firestore
-              await _sendResultsToFirestore(userId, maxCrackWidthStr, imageUrl);
+              // Verifica que las claves existan y no sean nulas
+              if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
+                double maxCrackWidth = decodedData['max_crack_width'];
+                String maxCrackWidthStr = maxCrackWidth.toStringAsFixed(2);
 
-              // Cierra el cuadro de diálogo de carga
-              Navigator.of(context).pop();
+                // Envía los resultados a Firestore
+                await _sendResultsToFirestore(userId, maxCrackWidthStr, imageUrl);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Resultados enviados exitosamente')),
-              );
+                // Cierra el cuadro de diálogo de carga
+                Navigator.of(context).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Resultados enviados exitosamente')),
+                );
+              } else {
+                // Cierra el cuadro de diálogo de carga
+                Navigator.of(context).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Respuesta de la API inválida')),
+                );
+              }
             } else {
               // Cierra el cuadro de diálogo de carga
               Navigator.of(context).pop();
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Respuesta de la API inválida')),
+                const SnackBar(content: Text('Error al procesar la imagen')),
               );
             }
           } else {
@@ -76,7 +88,7 @@ class DetectionPageState extends State<DetectionPage> {
             Navigator.of(context).pop();
 
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Error al procesar la imagen')),
+              const SnackBar(content: Text('No se detectó un círculo rojo en la imagen')),
             );
           }
         } else {
@@ -100,6 +112,39 @@ class DetectionPageState extends State<DetectionPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona una imagen')),
       );
+    }
+  }
+
+  Future<int?> _detectCircleDiameter(XFile image) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://10.0.2.2:8000/detectar-circulos/')
+      );
+
+      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final decodedData = json.decode(responseData);
+
+        if (decodedData.containsKey('message') && decodedData['message'] != null) {
+          final message = decodedData['message'];
+          final regex = RegExp(r'(\d+)');
+          final match = regex.firstMatch(message);
+          if (match != null) {
+            return int.parse(match.group(0)!);
+          }
+        }
+        return null;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("Error al detectar el círculo rojo: $e");
+      return null;
     }
   }
 
@@ -256,4 +301,3 @@ class DetectionPageState extends State<DetectionPage> {
     return false;
   }
 }
-
