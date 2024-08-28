@@ -29,7 +29,7 @@ class DetectionPageState extends State<DetectionPage> {
   final double riesgoModeradoMax = 5.00;
   final double riesgoAltoMax = 15.00;
 
-  Future<void> _sendImageToAPI(BuildContext context) async {
+  Future<void> _sendImageToAPI() async {
     if (_image != null) {
       try {
         // Detectar el diámetro del círculo rojo
@@ -37,7 +37,9 @@ class DetectionPageState extends State<DetectionPage> {
 
         if (circleDiameter != null) {
           // Muestra el cuadro de diálogo de carga
-          LoadingDialog.showLoadingDialog(context, 'Detectando...');
+          if (mounted) {
+            LoadingDialog.showLoadingDialog(context, 'Detectando...');
+          }
 
           // Obtén el usuario actual de Firebase
           final user = FirebaseAuth.instance.currentUser;
@@ -45,8 +47,7 @@ class DetectionPageState extends State<DetectionPage> {
             final userId = user.uid;
 
             // Subir la imagen a Firebase Storage
-            final imageUrl =
-                await _uploadImageToFirebaseStorage(userId, _image!);
+            final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
 
             // Prepara la imagen para el envío
             var request = http.MultipartRequest(
@@ -85,52 +86,74 @@ class DetectionPageState extends State<DetectionPage> {
                     userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo);
 
                 // Cierra el cuadro de diálogo de carga
-                Navigator.of(context).pop();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Resultados enviados exitosamente')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Resultados enviados exitosamente')),
+                  );
+                }
               } else {
                 // Cierra el cuadro de diálogo de carga
-                Navigator.of(context).pop();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Respuesta de la API inválida')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Respuesta de la API inválida')),
+                  );
+                }
               }
             } else {
               // Cierra el cuadro de diálogo de carga
-              Navigator.of(context).pop();
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Error al procesar la imagen')),
-              );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error al procesar la imagen')),
+                );
+              }
             }
           } else {
             // Cierra el cuadro de diálogo de carga
-            Navigator.of(context).pop();
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Usuario no autenticado')),
-            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Usuario no autenticado')),
+              );
+            }
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('No se detectó un círculo rojo en la imagen')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('No se detectó un círculo rojo en la imagen')),
+            );
+          }
         }
       } catch (e) {
         print("Error al enviar la imagen: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al enviar la imagen')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al enviar la imagen')),
+          );
+        }
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor selecciona una imagen')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor selecciona una imagen')),
+        );
+      }
     }
   }
 
@@ -166,22 +189,22 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
-  try {
-    // Generar un nombre único para la imagen usando un UUID
-    final uuid = Uuid();
-    final uniqueImageName = '${uuid.v4()}_${image.name}';
+  Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+    try {
+      // Generar un nombre único para la imagen usando un UUID
+      final uuid = Uuid();
+      final uniqueImageName = '${uuid.v4()}_${image.name}';
 
-    final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
-    final uploadTask = storageRef.putFile(File(image.path));
-    final snapshot = await uploadTask.whenComplete(() => {});
-    final downloadUrl = await snapshot.ref.getDownloadURL();
-    return downloadUrl;
-  } catch (e) {
-    print("Error al subir la imagen a Firebase Storage: $e");
-    throw Exception('Error al subir la imagen a Firebase Storage');
+      final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
+      final uploadTask = storageRef.putFile(File(image.path));
+      final snapshot = await uploadTask.whenComplete(() => {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print("Error al subir la imagen a Firebase Storage: $e");
+      throw Exception('Error al subir la imagen a Firebase Storage');
+    }
   }
-}
 
   Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
       String imageUrl, String nivelDeRiesgo) async {
@@ -203,10 +226,12 @@ Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
       });
     } catch (e) {
       print("Error al enviar los resultados a Firestore: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Error al guardar los resultados en Firestore')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Error al guardar los resultados en Firestore')),
+        );
+      }
     }
   }
 
@@ -252,7 +277,7 @@ Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
                 width: containerWidth,
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
-                  onClick: () => _sendImageToAPI(context),
+                  onClick: _sendImageToAPI,
                   btnText: 'Detectar',
                   icon: Icons.broken_image,
                 ),
