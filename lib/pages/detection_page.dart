@@ -25,21 +25,21 @@ class DetectionPageState extends State<DetectionPage> {
   Future<void> _sendImageToAPI(BuildContext context) async {
     if (_image != null) {
       try {
-        // Muestra el cuadro de diálogo de carga
-        LoadingDialog.showLoadingDialog(context, 'Detectando...');
+        // Detectar el diámetro del círculo rojo
+        final circleDiameter = await _detectCircleDiameter(_image!);
 
-        // Obtén el usuario actual de Firebase
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          final userId = user.uid;
+        if (circleDiameter != null) {
+          // Muestra el cuadro de diálogo de carga
+          LoadingDialog.showLoadingDialog(context, 'Detectando...');
 
-          // Subir la imagen a Firebase Storage
-          final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
+          // Obtén el usuario actual de Firebase
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            final userId = user.uid;
 
-          // Detectar el diámetro del círculo rojo
-          final circleDiameter = await _detectCircleDiameter(_image!);
+            // Subir la imagen a Firebase Storage
+            final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
 
-          if (circleDiameter != null) {
             // Prepara la imagen para el envío
             var request = http.MultipartRequest(
               'POST',
@@ -91,21 +91,15 @@ class DetectionPageState extends State<DetectionPage> {
             Navigator.of(context).pop();
 
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No se detectó un círculo rojo en la imagen')),
+              const SnackBar(content: Text('Usuario no autenticado')),
             );
           }
         } else {
-          // Cierra el cuadro de diálogo de carga
-          Navigator.of(context).pop();
-
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Usuario no autenticado')),
+            const SnackBar(content: Text('No se detectó un círculo rojo en la imagen')),
           );
         }
       } catch (e) {
-        // Cierra el cuadro de diálogo de carga
-        Navigator.of(context).pop();
-
         print("Error al enviar la imagen: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al enviar la imagen')),
