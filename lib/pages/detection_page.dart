@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
 
 class DetectionPage extends StatefulWidget {
@@ -19,87 +20,102 @@ class DetectionPage extends StatefulWidget {
 class DetectionPageState extends State<DetectionPage> {
   XFile? _image;
 
-Future<void> _sendImageToAPI(BuildContext context) async {
-  if (_image != null) {
-    try {
-      // Obtén el usuario actual de Firebase
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userId = user.uid;
+  Future<void> _sendImageToAPI(BuildContext context) async {
+    if (_image != null) {
+      try {
+        // Obtén el usuario actual de Firebase
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final userId = user.uid;
 
-        // Prepara la imagen para el envío
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('http://10.0.2.2:8000/predict/')
-        );
+          // Subir la imagen a Firebase Storage
+          final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
 
-        request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+          // Prepara la imagen para el envío
+          var request = http.MultipartRequest(
+            'POST',
+            Uri.parse('http://10.0.2.2:8000/predict/')
+          );
 
-        var response = await request.send();
+          request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
 
-        if (response.statusCode == 200) {
-          final responseData = await response.stream.bytesToString();
-          final decodedData = json.decode(responseData);
+          var response = await request.send();
 
-          // Verifica que las claves existan y no sean nulas
-          if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
-            double maxCrackWidth = decodedData['max_crack_width'];
-            String maxCrackWidthStr = maxCrackWidth.toStringAsFixed(2);
+          if (response.statusCode == 200) {
+            final responseData = await response.stream.bytesToString();
+            final decodedData = json.decode(responseData);
 
-            // Envía los resultados a Firestore
-            await _sendResultsToFirestore(userId, maxCrackWidthStr);
+            // Verifica que las claves existan y no sean nulas
+            if (decodedData.containsKey('max_crack_width') && decodedData['max_crack_width'] != null) {
+              double maxCrackWidth = decodedData['max_crack_width'];
+              String maxCrackWidthStr = maxCrackWidth.toStringAsFixed(2);
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Resultados enviados exitosamente')),
-            );
+              // Envía los resultados a Firestore
+              await _sendResultsToFirestore(userId, maxCrackWidthStr, imageUrl);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Resultados enviados exitosamente')),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Respuesta de la API inválida')),
+              );
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Respuesta de la API inválida')),
+              const SnackBar(content: Text('Error al procesar la imagen')),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error al procesar la imagen')),
+            const SnackBar(content: Text('Usuario no autenticado')),
           );
         }
-      } else {
+      } catch (e) {
+        print("Error al enviar la imagen: $e");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuario no autenticado')),
+          const SnackBar(content: Text('Error al enviar la imagen')),
         );
       }
-    } catch (e) {
-      print("Error al enviar la imagen: $e");
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al enviar la imagen')),
+        const SnackBar(content: Text('Por favor selecciona una imagen')),
       );
     }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Por favor selecciona una imagen')),
-    );
   }
-}
 
-Future<void> _sendResultsToFirestore(String userId, String maxCrackWidth) async {
-  try {
-    // Crea una nueva referencia de documento para almacenar los resultados
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('results')
-        .add({
-      'max_crack_width': maxCrackWidth,
-      'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
-    });
-  } catch (e) {
-    print("Error al enviar los resultados a Firestore: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error al guardar los resultados en Firestore')),
-    );
+  Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('users/$userId/${image.name}');
+      final uploadTask = storageRef.putFile(File(image.path));
+      final snapshot = await uploadTask.whenComplete(() => {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print("Error al subir la imagen a Firebase Storage: $e");
+      throw Exception('Error al subir la imagen a Firebase Storage');
+    }
   }
-}
 
-  
+  Future<void> _sendResultsToFirestore(String userId, String maxCrackWidth, String imageUrl) async {
+    try {
+      // Crea una nueva referencia de documento para almacenar los resultados
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('results')
+          .add({
+        'max_crack_width': maxCrackWidth,
+        'image_url': imageUrl,
+        'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
+      });
+    } catch (e) {
+      print("Error al enviar los resultados a Firestore: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al guardar los resultados en Firestore')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
