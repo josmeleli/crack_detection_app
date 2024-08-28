@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/appbar_widget.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
+import 'package:flutter_application_1/widgets/loading_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
@@ -23,6 +24,9 @@ class DetectionPageState extends State<DetectionPage> {
   Future<void> _sendImageToAPI(BuildContext context) async {
     if (_image != null) {
       try {
+        // Muestra el cuadro de diálogo de carga
+        LoadingDialog.showLoadingDialog(context, 'Detectando...');
+
         // Obtén el usuario actual de Firebase
         final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
@@ -53,25 +57,40 @@ class DetectionPageState extends State<DetectionPage> {
               // Envía los resultados a Firestore
               await _sendResultsToFirestore(userId, maxCrackWidthStr, imageUrl);
 
+              // Cierra el cuadro de diálogo de carga
+              Navigator.of(context).pop();
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Resultados enviados exitosamente')),
               );
             } else {
+              // Cierra el cuadro de diálogo de carga
+              Navigator.of(context).pop();
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Respuesta de la API inválida')),
               );
             }
           } else {
+            // Cierra el cuadro de diálogo de carga
+            Navigator.of(context).pop();
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Error al procesar la imagen')),
             );
           }
         } else {
+          // Cierra el cuadro de diálogo de carga
+          Navigator.of(context).pop();
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Usuario no autenticado')),
           );
         }
       } catch (e) {
+        // Cierra el cuadro de diálogo de carga
+        Navigator.of(context).pop();
+
         print("Error al enviar la imagen: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al enviar la imagen')),
@@ -237,3 +256,4 @@ class DetectionPageState extends State<DetectionPage> {
     return false;
   }
 }
+
