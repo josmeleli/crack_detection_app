@@ -11,6 +11,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
 
+import 'package:uuid/uuid.dart';
+
 class DetectionPage extends StatefulWidget {
   const DetectionPage({super.key});
 
@@ -164,20 +166,22 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<String> _uploadImageToFirebaseStorage(
-      String userId, XFile image) async {
-    try {
-      final storageRef =
-          FirebaseStorage.instance.ref().child('users/$userId/${image.name}');
-      final uploadTask = storageRef.putFile(File(image.path));
-      final snapshot = await uploadTask.whenComplete(() => {});
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print("Error al subir la imagen a Firebase Storage: $e");
-      throw Exception('Error al subir la imagen a Firebase Storage');
-    }
+Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+  try {
+    // Generar un nombre único para la imagen usando un UUID
+    final uuid = Uuid();
+    final uniqueImageName = '${uuid.v4()}_${image.name}';
+
+    final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
+    final uploadTask = storageRef.putFile(File(image.path));
+    final snapshot = await uploadTask.whenComplete(() => {});
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  } catch (e) {
+    print("Error al subir la imagen a Firebase Storage: $e");
+    throw Exception('Error al subir la imagen a Firebase Storage');
   }
+}
 
   Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
       String imageUrl, String nivelDeRiesgo) async {
