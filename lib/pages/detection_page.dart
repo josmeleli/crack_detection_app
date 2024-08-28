@@ -22,6 +22,11 @@ class DetectionPageState extends State<DetectionPage> {
   XFile? _image;
   final double diametroEnMm = 66.00;
 
+  // Definición de los niveles de riesgo
+  final double riesgoBajoMax = 2.00;
+  final double riesgoModeradoMax = 5.00;
+  final double riesgoAltoMax = 15.00;
+
   Future<void> _sendImageToAPI(BuildContext context) async {
     if (_image != null) {
       try {
@@ -63,9 +68,19 @@ class DetectionPageState extends State<DetectionPage> {
                 double maxCrackWidthMm =
                     maxCrackWidthPx * (diametroEnMm / circleDiameter);
 
+                // Determina el nivel de riesgo
+                String nivelDeRiesgo;
+                if (maxCrackWidthMm <= riesgoBajoMax) {
+                  nivelDeRiesgo = "Bajo";
+                } else if (maxCrackWidthMm <= riesgoModeradoMax) {
+                  nivelDeRiesgo = "Moderado";
+                } else {
+                  nivelDeRiesgo = "Alto";
+                }
+
                 // Envía los resultados a Firestore
                 await _sendResultsToFirestore(
-                    userId, maxCrackWidthMm, imageUrl);
+                    userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo);
 
                 // Cierra el cuadro de diálogo de carga
                 Navigator.of(context).pop();
@@ -164,8 +179,8 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<void> _sendResultsToFirestore(
-      String userId, double maxCrackWidth, String imageUrl) async {
+  Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
+      String imageUrl, String nivelDeRiesgo) async {
     try {
       // Redondea el ancho de la grieta a dos decimales
       double maxCrackWidthRounded =
@@ -179,6 +194,7 @@ class DetectionPageState extends State<DetectionPage> {
           .add({
         'max_crack_width': maxCrackWidthRounded,
         'image_url': imageUrl,
+        'nivel_de_riesgo': nivelDeRiesgo,
         'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
       });
     } catch (e) {
