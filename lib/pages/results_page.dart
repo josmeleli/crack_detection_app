@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/widgets/appbar_widget.dart';
 
-
 class ResultsPage extends StatelessWidget {
   const ResultsPage({super.key});
 
@@ -181,28 +180,21 @@ class ResultsPage extends StatelessWidget {
                                 SizedBox(
                                   height: 65,
                                   child: ListTile(
-                                    trailing: Card(
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20)),
-                                      margin: const EdgeInsets.only(top: 15),
-                                      child: ClipOval(
-                                        child: Material(
-                                          color: Colors.grey[50], // button color
-                                          child: InkWell(
-                                            child: const SizedBox(
-                                                width: 40,
-                                                height: 40,
-                                                child: Icon(
-                                                  Icons.delete,
-                                                  size: 20,
-                                                )),
-                                            onTap: () {
-                                              _deleteResult(context, docId, imageUrl);
-                                            },
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                                    trailing: PopupMenuButton<String>(
+                                      onSelected: (value) {
+                                        if (value == 'delete') {
+                                          _deleteResult(context, docId, imageUrl);
+                                        }
+                                      },
+                                      itemBuilder: (BuildContext context) {
+                                        return [
+                                          const PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: Text('Borrar'),
                                           ),
-                                        ),
-                                      ),
+                                        ];
+                                      },
                                     ),
                                     title: Text(
                                       'Ancho de grieta: $maxCrackWidth mm',
