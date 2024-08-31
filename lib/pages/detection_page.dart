@@ -10,6 +10,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -29,84 +31,84 @@ class DetectionPageState extends State<DetectionPage> {
   final double riesgoModeradoMax = 5.00;
   final double riesgoAltoMax = 15.00;
 
-  Future<void> _sendImageToAPI() async {
-    if (_image != null) {
-      try {
-        // Detectar el diámetro del círculo rojo
-        final circleDiameter = await _detectCircleDiameter(_image!);
+Future<void> _sendImageToAPI() async {
+  if (_image != null) {
+    try {
+      print("Iniciando detección de imagen...");
 
-        if (circleDiameter != null) {
-          // Muestra el cuadro de diálogo de carga
-          if (mounted) {
-            LoadingDialog.showLoadingDialog(context, 'Detectando...');
-          }
+      // Detectar el diámetro del círculo rojo
+      final circleDiameter = await _detectCircleDiameter(_image!);
+      print("Diámetro del círculo detectado: $circleDiameter");
 
-          // Obtén el usuario actual de Firebase
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            final userId = user.uid;
+      if (circleDiameter != null) {
+        // Muestra el cuadro de diálogo de carga
+        if (mounted) {
+          LoadingDialog.showLoadingDialog(context, 'Detectando...');
+        }
 
-            // Subir la imagen a Firebase Storage
-            final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
+        // Obtén el usuario actual de Firebase
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final userId = user.uid;
 
-            // Prepara la imagen para el envío
-            var request = http.MultipartRequest(
-                'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
+          // Obtener la ubicación actual
+          final position = await _determinePosition();
+          print("Ubicación obtenida: ${position.latitude}, ${position.longitude}");
+          final address = await _getAddressFromPosition(position);
+          print("Dirección obtenida: $address");
 
-            request.files
-                .add(await http.MultipartFile.fromPath('file', _image!.path));
+          // Subir la imagen a Firebase Storage
+          final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
+          print("URL de la imagen subida: $imageUrl");
 
-            var response = await request.send();
+          // Prepara la imagen para el envío
+          var request = http.MultipartRequest(
+              'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
 
-            if (response.statusCode == 200) {
-              final responseData = await response.stream.bytesToString();
-              final decodedData = json.decode(responseData);
+          request.files
+              .add(await http.MultipartFile.fromPath('file', _image!.path));
 
-              // Verifica que las claves existan y no sean nulas
-              if (decodedData.containsKey('max_crack_width') &&
-                  decodedData['max_crack_width'] != null) {
-                double maxCrackWidthPx = decodedData['max_crack_width'];
+          var response = await request.send();
+          print("Respuesta de la API recibida: ${response.statusCode}");
 
-                // Calcula el ancho de la grieta en milímetros
-                double maxCrackWidthMm =
-                    maxCrackWidthPx * (diametroEnMm / circleDiameter);
+          if (response.statusCode == 200) {
+            final responseData = await response.stream.bytesToString();
+            final decodedData = json.decode(responseData);
+            print("Datos decodificados de la API: $decodedData");
 
-                // Determina el nivel de riesgo
-                String nivelDeRiesgo;
-                if (maxCrackWidthMm <= riesgoBajoMax) {
-                  nivelDeRiesgo = "Bajo";
-                } else if (maxCrackWidthMm <= riesgoModeradoMax) {
-                  nivelDeRiesgo = "Moderado";
-                } else {
-                  nivelDeRiesgo = "Alto";
-                }
+            // Verifica que las claves existan y no sean nulas
+            if (decodedData.containsKey('max_crack_width') &&
+                decodedData['max_crack_width'] != null) {
+              double maxCrackWidthPx = decodedData['max_crack_width'];
 
-                // Envía los resultados a Firestore
-                await _sendResultsToFirestore(
-                    userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo);
+              // Calcula el ancho de la grieta en milímetros
+              double maxCrackWidthMm =
+                  maxCrackWidthPx * (diametroEnMm / circleDiameter);
 
-                // Cierra el cuadro de diálogo de carga
-                if (mounted) {
-                  Navigator.of(context).pop();
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Resultados enviados exitosamente')),
-                  );
-                }
+              // Determina el nivel de riesgo
+              String nivelDeRiesgo;
+              if (maxCrackWidthMm <= riesgoBajoMax) {
+                nivelDeRiesgo = "Bajo";
+              } else if (maxCrackWidthMm <= riesgoModeradoMax) {
+                nivelDeRiesgo = "Moderado";
               } else {
-                // Cierra el cuadro de diálogo de carga
-                if (mounted) {
-                  Navigator.of(context).pop();
-                }
+                nivelDeRiesgo = "Alto";
+              }
 
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Respuesta de la API inválida')),
-                  );
-                }
+              // Envía los resultados a Firestore
+              await _sendResultsToFirestore(
+                  userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo, address);
+
+              // Cierra el cuadro de diálogo de carga
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Resultados enviados exitosamente')),
+                );
               }
             } else {
               // Cierra el cuadro de diálogo de carga
@@ -116,7 +118,7 @@ class DetectionPageState extends State<DetectionPage> {
 
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error al procesar la imagen')),
+                  const SnackBar(content: Text('Respuesta de la API inválida')),
                 );
               }
             }
@@ -128,34 +130,83 @@ class DetectionPageState extends State<DetectionPage> {
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Usuario no autenticado')),
+                const SnackBar(content: Text('Error al procesar la imagen')),
               );
             }
           }
         } else {
+          // Cierra el cuadro de diálogo de carga
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('No se detectó un círculo rojo en la imagen')),
+              const SnackBar(content: Text('Usuario no autenticado')),
             );
           }
         }
-      } catch (e) {
-        print("Error al enviar la imagen: $e");
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error al enviar la imagen')),
+            const SnackBar(
+                content: Text('No se detectó un círculo rojo en la imagen')),
           );
         }
       }
-    } else {
+    } catch (e) {
+      print("Error al enviar la imagen: $e");
       if (mounted) {
+        Navigator.of(context).pop(); // Cierra el cuadro de diálogo de carga en caso de error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Por favor selecciona una imagen')),
+          const SnackBar(content: Text('Error al enviar la imagen')),
         );
       }
     }
+  } else {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona una imagen')),
+      );
+    }
   }
+}
+
+Future<Position> _determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  // Verifica si los servicios de ubicación están habilitados
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    print("Los servicios de ubicación están deshabilitados.");
+    return Future.error('Los servicios de ubicación están deshabilitados.');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      print("Los permisos de ubicación están denegados.");
+      return Future.error('Los permisos de ubicación están denegados.');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    print("Los permisos de ubicación están denegados permanentemente.");
+    return Future.error(
+        'Los permisos de ubicación están denegados permanentemente.');
+  }
+
+  return await Geolocator.getCurrentPosition();
+}
+
+Future<String> _getAddressFromPosition(Position position) async {
+  List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude, position.longitude);
+  Placemark place = placemarks[0];
+  return "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
+}
 
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
@@ -189,51 +240,53 @@ class DetectionPageState extends State<DetectionPage> {
     }
   }
 
-  Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
-    try {
-      // Generar un nombre único para la imagen usando un UUID
-      final uuid = Uuid();
-      final uniqueImageName = '${uuid.v4()}_${image.name}';
+Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+  try {
+    // Generar un nombre único para la imagen usando un UUID
+    final uuid = Uuid();
+    final uniqueImageName = '${uuid.v4()}_${image.name}';
 
-      final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
-      final uploadTask = storageRef.putFile(File(image.path));
-      final snapshot = await uploadTask.whenComplete(() => {});
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print("Error al subir la imagen a Firebase Storage: $e");
-      throw Exception('Error al subir la imagen a Firebase Storage');
+    final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
+    final uploadTask = storageRef.putFile(File(image.path));
+    final snapshot = await uploadTask.whenComplete(() => {});
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    print("Imagen subida a Firebase Storage: $downloadUrl");
+    return downloadUrl;
+  } catch (e) {
+    print("Error al subir la imagen a Firebase Storage: $e");
+    throw Exception('Error al subir la imagen a Firebase Storage');
+  }
+}
+
+Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
+    String imageUrl, String nivelDeRiesgo, String address) async {
+  try {
+    // Redondea el ancho de la grieta a dos decimales
+    double maxCrackWidthRounded =
+        double.parse(maxCrackWidth.toStringAsFixed(2));
+
+    // Crea una nueva referencia de documento para almacenar los resultados
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('results')
+        .add({
+      'max_crack_width': maxCrackWidthRounded,
+      'image_url': imageUrl,
+      'nivel_de_riesgo': nivelDeRiesgo,
+      'direccion': address, // Añadir la dirección
+      'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
+    });
+  } catch (e) {
+    print("Error al enviar los resultados a Firestore: $e");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Error al guardar los resultados en Firestore')),
+      );
     }
   }
-
-  Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
-      String imageUrl, String nivelDeRiesgo) async {
-    try {
-      // Redondea el ancho de la grieta a dos decimales
-      double maxCrackWidthRounded =
-          double.parse(maxCrackWidth.toStringAsFixed(2));
-
-      // Crea una nueva referencia de documento para almacenar los resultados
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('results')
-          .add({
-        'max_crack_width': maxCrackWidthRounded,
-        'image_url': imageUrl,
-        'nivel_de_riesgo': nivelDeRiesgo,
-        'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
-      });
-    } catch (e) {
-      print("Error al enviar los resultados a Firestore: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Error al guardar los resultados en Firestore')),
-        );
-      }
-    }
-  }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -68,5 +68,7 @@
     <false/>
     <key>GoogleService-Info</key>
     <string>YOUR_GOOGLE_SERVICE_INFO_PLIST</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need your location to provide better services.</string>
 </dict>
 </plist>
