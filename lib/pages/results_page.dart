@@ -219,28 +219,28 @@ class _ResultsPageState extends State<ResultsPage> {
                             onTap: () {
                               _showImageDialog(context, imageUrl);
                             },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  top: BorderSide(
-                                    color: riskColor,
-                                    width: 5.0,
-                                  ),
-                                ),
+                            child: Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 6),
-                                  ),
-                                ],
                               ),
-                              child: Card(
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: riskColor,
+                                      width: 5.0,
+                                    ),
+                                  ),
                                   borderRadius: BorderRadius.circular(10.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 12,
+                                      offset: Offset(0, 6),
+                                    ),
+                                  ],
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
