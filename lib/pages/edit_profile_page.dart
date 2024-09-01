@@ -226,7 +226,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   hint: 'Teléfono',
                   icon: Icons.phone,
                 ),
-                const SizedBox(height: 20),
                 textInput(
                   controller: _currentPasswordController,
                   hint: 'Contraseña Actual',

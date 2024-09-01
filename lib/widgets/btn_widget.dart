@@ -5,12 +5,14 @@ class ButtonWidget extends StatefulWidget {
   final String btnText;
   final VoidCallback? onClick;
   final IconData? icon; // Icono opcional
+  final TextStyle? textStyle; // Estilo de texto opcional
 
   const ButtonWidget({
     super.key,
     required this.btnText,
     this.onClick,
     this.icon, // Inicializar el icono opcional
+    this.textStyle, // Inicializar el estilo de texto opcional
   });
 
   @override
@@ -43,12 +45,15 @@ class ButtonWidgetState extends State<ButtonWidget> {
               Icon(widget.icon, color: Colors.white),
               const SizedBox(width: 8), // Espacio entre el icono y el texto
             ],
-            Text(
-              widget.btnText,
+            DefaultTextStyle(
               style: const TextStyle(
                 fontSize: 20,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+              ),
+              child: Text(
+                widget.btnText,
+                style: widget.textStyle,
               ),
             ),
           ],
