@@ -238,7 +238,7 @@ class _ResultsPageState extends State<ResultsPage> {
                                       color: Colors.grey.withOpacity(0.1),
                                       spreadRadius: 1,
                                       blurRadius: 12,
-                                      offset: Offset(0, 6),
+                                      offset: const Offset(0, 6),
                                     ),
                                   ],
                                 ),
@@ -292,7 +292,7 @@ class _ResultsPageState extends State<ResultsPage> {
                                           ),
                                         ),
                                       ),
-                                      Divider(
+                                      const Divider(
                                         thickness: 1.4,
                                         height: 1, // Ajustar la altura del Divider
                                       ),

@@ -16,6 +16,9 @@ String? passwordValidator(String? text) {
   if (text == null || text.trim().isEmpty) {
     return 'La contraseña está vacía';
   }
+  if (text.length < 6) {
+    return 'La contraseña debe tener al menos 6 caracteres';
+  }
   return null;
 }
 

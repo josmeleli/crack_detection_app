@@ -18,7 +18,7 @@ class InfoPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('1. Primero, ve a la interfaz de detección.'),
+                Text('1. Primero, ve a la interfaz Detectar.'),
                 Image(image: AssetImage('assets/images/info2.png'), width: 250,), 
                 SizedBox(height: 20),
 

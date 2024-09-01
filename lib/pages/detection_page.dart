@@ -243,7 +243,7 @@ Future<String> _getAddressFromPosition(Position position) async {
 Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
   try {
     // Generar un nombre único para la imagen usando un UUID
-    final uuid = Uuid();
+    const uuid = Uuid();
     final uniqueImageName = '${uuid.v4()}_${image.name}';
 
     final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
