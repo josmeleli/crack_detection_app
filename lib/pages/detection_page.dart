@@ -1,19 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/appbar_widget.dart';
 import 'package:flutter_application_1/widgets/btn_widget.dart';
 import 'package:flutter_application_1/widgets/loading_dialog.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-
-import 'package:uuid/uuid.dart';
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({super.key});
@@ -37,108 +37,144 @@ class DetectionPageState extends State<DetectionPage> {
     _loadDiametroEnMm();
   }
 
-Future<void> _loadDiametroEnMm() async {
-  try {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
-
-    final userData = userDoc.data() as Map<String, dynamic>;
-    if (mounted) {
-      setState(() {
-        diametroEnMm = userData['diametroEnMm'] as double? ?? 66.00;
-      });
-    }
-  } catch (e) {
-    // Manejo de errores si es necesario
-    print('Error al cargar el diámetro: $e');
-  }
-}
-
-Future<void> _sendImageToAPI() async {
-  if (_image != null) {
+  Future<void> _loadDiametroEnMm() async {
     try {
-      print("Iniciando clasificación de imagen...");
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
 
-      // Clasificar la imagen para verificar si hay grietas
-      final crackDetected = await _classifyImage(_image!);
-      print("Clasificación de la imagen: $crackDetected");
+      final userData = userDoc.data() as Map<String, dynamic>;
+      if (mounted) {
+        setState(() {
+          diametroEnMm = userData['diametroEnMm'] as double? ?? 66.00;
+        });
+      }
+    } catch (e) {
+      // Manejo de errores si es necesario
+      print('Error al cargar el diámetro: $e');
+    }
+  }
 
-      if (crackDetected) {
-        // Detectar el diámetro del círculo rojo
-        final circleDiameter = await _detectCircleDiameter(_image!);
-        print("Diámetro del círculo detectado: $circleDiameter");
+  Future<void> _sendImageToAPI() async {
+    if (_image != null) {
+      try {
+        print("Iniciando clasificación de imagen...");
 
-        if (circleDiameter != null) {
-          // Muestra el cuadro de diálogo de carga
-          if (mounted) {
-            LoadingDialog.showLoadingDialog(context, 'Detectando...');
-          }
+        // Clasificar la imagen para verificar si hay grietas
+        final crackDetected = await _classifyImage(_image!);
+        print("Clasificación de la imagen: $crackDetected");
 
-          // Obtén el usuario actual de Firebase
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            final userId = user.uid;
+        if (crackDetected) {
+          // Detectar el diámetro del círculo rojo
+          final circleDiameter = await _detectCircleDiameter(_image!);
+          print("Diámetro del círculo detectado: $circleDiameter");
 
-            // Obtener la ubicación actual
-            final position = await _determinePosition();
-            print("Ubicación obtenida: ${position.latitude}, ${position.longitude}");
-            final address = await _getAddressFromPosition(position);
-            print("Dirección obtenida: $address");
+          if (circleDiameter != null) {
+            // Muestra el cuadro de diálogo de carga
+            if (mounted) {
+              LoadingDialog.showLoadingDialog(context, 'Detectando...');
+            }
 
-            // Subir la imagen a Firebase Storage
-            final imageUrl = await _uploadImageToFirebaseStorage(userId, _image!);
-            print("URL de la imagen subida: $imageUrl");
+            // Obtén el usuario actual de Firebase
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              final userId = user.uid;
 
-            // Prepara la imagen para el envío
-            var request = http.MultipartRequest(
-                'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
+              // Obtener la ubicación actual
+              final position = await _determinePosition();
+              print("Ubicación obtenida: ${position.latitude}, ${position.longitude}");
+              final address = await _getAddressFromPosition(position);
+              print("Dirección obtenida: $address");
 
-            request.files
-                .add(await http.MultipartFile.fromPath('file', _image!.path));
+              // Convertir XFile a File
+              final file = File(_image!.path);
 
-            var response = await request.send();
-            print("Respuesta de la API recibida: ${response.statusCode}");
+              // Subir la imagen a Firebase Storage
+              final imageUrl = await _uploadImageToFirebaseStorage(userId, file);
+              print("URL de la imagen subida: $imageUrl");
 
-            if (response.statusCode == 200) {
-              final responseData = await response.stream.bytesToString();
-              final decodedData = json.decode(responseData);
-              print("Datos decodificados de la API: $decodedData");
+              // Prepara la imagen para el envío
+              var request = http.MultipartRequest(
+                  'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
 
-              // Verifica que las claves existan y no sean nulas
-              if (decodedData.containsKey('max_crack_width') &&
-                  decodedData['max_crack_width'] != null) {
-                double maxCrackWidthPx = decodedData['max_crack_width'];
+              request.files
+                  .add(await http.MultipartFile.fromPath('file', _image!.path));
 
-                // Calcula el ancho de la grieta en milímetros
-                double maxCrackWidthMm =
-                    maxCrackWidthPx * (diametroEnMm / circleDiameter);
+              var response = await request.send();
+              print("Respuesta de la API recibida: ${response.statusCode}");
 
-                // Determina el nivel de riesgo
-                String nivelDeRiesgo;
-                if (maxCrackWidthMm <= riesgoBajoMax) {
-                  nivelDeRiesgo = "Bajo";
-                } else if (maxCrackWidthMm <= riesgoModeradoMax) {
-                  nivelDeRiesgo = "Moderado";
+              if (response.statusCode == 200) {
+                final responseData = await response.stream.bytesToString();
+                final decodedData = json.decode(responseData);
+                print("Datos decodificados de la API: $decodedData");
+
+                // Verifica que las claves existan y no sean nulas
+                if (decodedData.containsKey('max_crack_width') &&
+                    decodedData['max_crack_width'] != null) {
+                  double maxCrackWidthPx = decodedData['max_crack_width'];
+
+                  // Calcula el ancho de la grieta en milímetros
+                  double maxCrackWidthMm =
+                      maxCrackWidthPx * (diametroEnMm / circleDiameter);
+
+                  // Determina el nivel de riesgo
+                  String nivelDeRiesgo;
+                  if (maxCrackWidthMm <= riesgoBajoMax) {
+                    nivelDeRiesgo = "Bajo";
+                  } else if (maxCrackWidthMm <= riesgoModeradoMax) {
+                    nivelDeRiesgo = "Moderado";
+                  } else {
+                    nivelDeRiesgo = "Alto";
+                  }
+
+                  // Convertir la imagen en base64 a archivo de imagen
+                  if (decodedData.containsKey('max_width_image') &&
+                      decodedData['max_width_image'] != null) {
+                    final base64Image = decodedData['max_width_image'];
+                    final imageFile = await _convertBase64ToFile(base64Image);
+
+                    // Subir la imagen convertida a Firebase Storage
+                    final convertedImageUrl = await _uploadImageToFirebaseStorage(userId, imageFile);
+
+                    // Envía los resultados a Firestore
+                    await _sendResultsToFirestore(
+                        userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo, address, convertedImageUrl);
+
+                    // Cierra el cuadro de diálogo de carga
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                    }
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Resultados enviados exitosamente')),
+                      );
+                    }
+                  } else {
+                    // Cierra el cuadro de diálogo de carga
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                    }
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Respuesta de la API inválida')),
+                      );
+                    }
+                  }
                 } else {
-                  nivelDeRiesgo = "Alto";
-                }
+                  // Cierra el cuadro de diálogo de carga
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                  }
 
-                // Envía los resultados a Firestore
-                await _sendResultsToFirestore(
-                    userId, maxCrackWidthMm, imageUrl, nivelDeRiesgo, address);
-
-                // Cierra el cuadro de diálogo de carga
-                if (mounted) {
-                  Navigator.of(context).pop();
-                }
-
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Resultados enviados exitosamente')),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Respuesta de la API inválida')),
+                    );
+                  }
                 }
               } else {
                 // Cierra el cuadro de diálogo de carga
@@ -148,7 +184,7 @@ Future<void> _sendImageToAPI() async {
 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Respuesta de la API inválida')),
+                    const SnackBar(content: Text('Error al procesar la imagen')),
                   );
                 }
               }
@@ -160,82 +196,79 @@ Future<void> _sendImageToAPI() async {
 
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error al procesar la imagen')),
+                  const SnackBar(content: Text('Usuario no autenticado')),
                 );
               }
             }
           } else {
-            // Cierra el cuadro de diálogo de carga
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
-
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Usuario no autenticado')),
+                const SnackBar(
+                    content: Text('No se detectó un círculo rojo en la imagen')),
               );
             }
           }
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('No se detectó un círculo rojo en la imagen')),
+              const SnackBar(content: Text('No se detectaron grietas')),
             );
           }
         }
-      } else {
+      } catch (e) {
+        print("Error al enviar la imagen: $e");
         if (mounted) {
+          Navigator.of(context).pop(); // Cierra el cuadro de diálogo de carga en caso de error
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se detectaron grietas')),
+            const SnackBar(content: Text('Error al enviar la imagen')),
           );
         }
       }
-    } catch (e) {
-      print("Error al enviar la imagen: $e");
+    } else {
       if (mounted) {
-        Navigator.of(context).pop(); // Cierra el cuadro de diálogo de carga en caso de error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al enviar la imagen')),
+          const SnackBar(content: Text('Por favor selecciona una imagen')),
         );
       }
     }
-  } else {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor selecciona una imagen')),
-      );
-    }
   }
-}
+
+  Future<File> _convertBase64ToFile(String base64Image) async {
+    final decodedBytes = base64Decode(base64Image);
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/${Uuid().v4()}.png';
+    final file = File(filePath);
+    await file.writeAsBytes(decodedBytes);
+    return file;
+  }
 
   Future<bool> _classifyImage(XFile image) async {
-  try {
-    var request = http.MultipartRequest(
-        'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
+    try {
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
 
-    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+      request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
-    var response = await request.send();
+      var response = await request.send();
 
-    if (response.statusCode == 200) {
-      final responseData = await response.stream.bytesToString();
-      final decodedData = json.decode(responseData);
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final decodedData = json.decode(responseData);
 
-      if (decodedData.containsKey('prediction') &&
-          decodedData['prediction'] == 'Crack Detected') {
-        return true;
+        if (decodedData.containsKey('prediction') &&
+            decodedData['prediction'] == 'Crack Detected') {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
+      print("Error al clasificar la imagen: $e");
       return false;
     }
-  } catch (e) {
-    print("Error al clasificar la imagen: $e");
-    return false;
   }
-}
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
@@ -305,14 +338,14 @@ Future<void> _sendImageToAPI() async {
     }
   }
 
-  Future<String> _uploadImageToFirebaseStorage(String userId, XFile image) async {
+  Future<String> _uploadImageToFirebaseStorage(String userId, File image) async {
     try {
       // Generar un nombre único para la imagen usando un UUID
       const uuid = Uuid();
-      final uniqueImageName = '${uuid.v4()}_${image.name}';
+      final uniqueImageName = '${uuid.v4()}_${image.path.split('/').last}';
 
       final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
-      final uploadTask = storageRef.putFile(File(image.path));
+      final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
       print("Imagen subida a Firebase Storage: $downloadUrl");
@@ -324,7 +357,7 @@ Future<void> _sendImageToAPI() async {
   }
 
   Future<void> _sendResultsToFirestore(String userId, double maxCrackWidth,
-      String imageUrl, String nivelDeRiesgo, String address) async {
+      String imageUrl, String nivelDeRiesgo, String address, String convertedImageUrl) async {
     try {
       // Redondea el ancho de la grieta a dos decimales
       double maxCrackWidthRounded =
@@ -340,6 +373,7 @@ Future<void> _sendImageToAPI() async {
         'image_url': imageUrl,
         'nivel_de_riesgo': nivelDeRiesgo,
         'direccion': address, // Añadir la dirección
+        'converted_image_url': convertedImageUrl, // Añadir la URL de la imagen convertida
         'timestamp': FieldValue.serverTimestamp(), // Añadir marca de tiempo
       });
     } catch (e) {

@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart'; // Importar servicios para el portapapeles
 import 'package:flutter_application_1/utils/color.dart';
 import 'package:flutter_application_1/widgets/appbar_widget.dart';
+import 'package:flutter_application_1/widgets/btn_widget.dart';
 
 class ResultsPage extends StatefulWidget {
   const ResultsPage({super.key});
@@ -29,46 +30,62 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-  void _showImageDialog(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.broken_image, size: 200);
-                    },
-                  ),
+Future<void> _showImageDialog(BuildContext context, String imageUrl, String convertedImageUrl) async {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 300, // Ajusta la altura según sea necesario
+                child: PageView(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(
+                        convertedImageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.broken_image, size: 200);
+                        },
+                      ),
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.broken_image, size: 200);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cerrar'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 10),
+              ButtonWidget(
+                btnText: 'Cerrar',
+                onClick: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
-  Future<void> _deleteResult(
-      BuildContext context, String docId, String imageUrl) async {
+  Future<void> _deleteResult(BuildContext context, String docId, String imageUrl, String convertedImageUrl) async {
     try {
       // Eliminar el documento de Firestore
       await FirebaseFirestore.instance
@@ -79,8 +96,12 @@ class _ResultsPageState extends State<ResultsPage> {
           .delete();
 
       // Eliminar la imagen de Firebase Storage
-      final storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+      final storageRef = FirebaseStorage.instance.refFromURL(imageUrl,);
       await storageRef.delete();
+
+      // Eliminar la imagen convertida de Firebase Storage
+      final convertedStorageRef = FirebaseStorage.instance.refFromURL(convertedImageUrl);
+      await convertedStorageRef.delete();
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,6 +218,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         final maxCrackWidth = result['max_crack_width'];
                         final nivelDeRiesgo = result['nivel_de_riesgo'];
                         final address = result['direccion']; // Obtener la dirección
+                        final convertedImageUrl = result['converted_image_url']; // Obtener la URL de la imagen convertida
 
                         Color riskColor;
                         switch (nivelDeRiesgo) {
@@ -217,7 +239,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           padding: const EdgeInsets.all(10.0),
                           child: GestureDetector(
                             onTap: () {
-                              _showImageDialog(context, imageUrl);
+                              _showImageDialog(context, imageUrl, convertedImageUrl);
                             },
                             child: Card(
                               elevation: 0,
@@ -253,7 +275,7 @@ class _ResultsPageState extends State<ResultsPage> {
                                           trailing: PopupMenuButton<String>(
                                             onSelected: (value) {
                                               if (value == 'delete') {
-                                                _deleteResult(context, docId, imageUrl);
+                                                _deleteResult(context, docId, imageUrl, convertedImageUrl);
                                               }
                                             },
                                             itemBuilder: (BuildContext context) {
