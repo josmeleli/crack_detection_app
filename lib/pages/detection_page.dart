@@ -37,23 +37,35 @@ class DetectionPageState extends State<DetectionPage> {
     _loadDiametroEnMm();
   }
 
-  Future<void> _loadDiametroEnMm() async {
+Future<void> _loadDiametroEnMm() async {
+  try {
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
     final userData = userDoc.data() as Map<String, dynamic>;
-    setState(() {
-      diametroEnMm = userData['diametroEnMm'] as double? ?? 66.00;
-    });
+    if (mounted) {
+      setState(() {
+        diametroEnMm = userData['diametroEnMm'] as double? ?? 66.00;
+      });
+    }
+  } catch (e) {
+    // Manejo de errores si es necesario
+    print('Error al cargar el diámetro: $e');
   }
+}
 
-  Future<void> _sendImageToAPI() async {
-    if (_image != null) {
-      try {
-        print("Iniciando detección de imagen...");
+Future<void> _sendImageToAPI() async {
+  if (_image != null) {
+    try {
+      print("Iniciando clasificación de imagen...");
 
+      // Clasificar la imagen para verificar si hay grietas
+      final crackDetected = await _classifyImage(_image!);
+      print("Clasificación de la imagen: $crackDetected");
+
+      if (crackDetected) {
         // Detectar el diámetro del círculo rojo
         final circleDiameter = await _detectCircleDiameter(_image!);
         print("Diámetro del círculo detectado: $circleDiameter");
@@ -172,23 +184,58 @@ class DetectionPageState extends State<DetectionPage> {
             );
           }
         }
-      } catch (e) {
-        print("Error al enviar la imagen: $e");
+      } else {
         if (mounted) {
-          Navigator.of(context).pop(); // Cierra el cuadro de diálogo de carga en caso de error
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error al enviar la imagen')),
+            const SnackBar(content: Text('No se detectaron grietas')),
           );
         }
       }
-    } else {
+    } catch (e) {
+      print("Error al enviar la imagen: $e");
       if (mounted) {
+        Navigator.of(context).pop(); // Cierra el cuadro de diálogo de carga en caso de error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Por favor selecciona una imagen')),
+          const SnackBar(content: Text('Error al enviar la imagen')),
         );
       }
     }
+  } else {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona una imagen')),
+      );
+    }
   }
+}
+
+  Future<bool> _classifyImage(XFile image) async {
+  try {
+    var request = http.MultipartRequest(
+        'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
+
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final decodedData = json.decode(responseData);
+
+      if (decodedData.containsKey('prediction') &&
+          decodedData['prediction'] == 'Crack Detected') {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print("Error al clasificar la imagen: $e");
+    return false;
+  }
+}
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
