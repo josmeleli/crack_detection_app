@@ -96,7 +96,7 @@ class DetectionPageState extends State<DetectionPage> {
 
               // Prepara la imagen para el envío
               var request = http.MultipartRequest(
-                  'POST', Uri.parse('https://web-production-a215.up.railway.app/predict/'));
+                  'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
 
               request.files
                   .add(await http.MultipartFile.fromPath('file', _image!.path));
@@ -245,7 +245,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<bool> _classifyImage(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('https://web-production-a215.up.railway.app/classify/'));
+          'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
@@ -309,7 +309,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('https://web-production-a215.up.railway.app/detectar-circulos/'));
+          'POST', Uri.parse('http://10.0.2.2:8000/detectar-circulos/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
@@ -411,7 +411,7 @@ class DetectionPageState extends State<DetectionPage> {
                       child: Container(
                         width: containerWidth,
                         height: containerWidth,
-                        color: const Color(0xFFF4F4F4),
+                        color: Colors.grey.withOpacity(0.1),
                         child: _image == null
                             ? const Center(child: Text('Imagen aquí'))
                             : Image.file(
