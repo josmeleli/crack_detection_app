@@ -30,62 +30,157 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 
-Future<void> _showImageDialog(BuildContext context, String imageUrl, String convertedImageUrl) async {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 300, // Ajusta la altura según sea necesario
-                child: PageView(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Image.network(
-                        convertedImageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.broken_image, size: 200);
-                        },
-                      ),
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.broken_image, size: 200);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              ButtonWidget(
-                btnText: 'Cerrar',
-                onClick: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
+  Future<void> _showImageDialog(BuildContext context, String imageUrl,
+      String convertedImageUrl, String nivelDeRiesgo) async {
+    List<String> riskMessages;
+    Color riskColor;
+    switch (nivelDeRiesgo) {
+      case 'Bajo':
+        riskMessages = [
+          'Observa estas grietas ocasionalmente para asegurarte de que no se agranden.',
+          'Si la grieta está en una pared exterior, considera usar un sellador para prevenir daños por humedad.'
+        ];
+        riskColor = riskLowColor;
+        break;
+      case 'Moderado':
+        riskMessages = [
+          'Sería recomendable que un profesional revise las grietas para entender la causa y determinar si se necesita alguna reparación.',
+          'Monitorea estas grietas mensualmente para ver si están creciendo.'
+        ];
+        riskColor = riskModerateColor;
+        break;
+      case 'Alto':
+        riskMessages = [
+          'Llama a un experto lo antes posible para evaluar la situación y determinar las reparaciones necesarias.',
+          'Evita usar o poner peso en la zona afectada hasta que un profesional confirme que es seguro.'
+        ];
+        riskColor = riskHighColor;
+        break;
+      default:
+        riskMessages = [];
+        riskColor = riskDefaultColor;
+    }
 
-  Future<void> _deleteResult(BuildContext context, String docId, String imageUrl, String convertedImageUrl) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: riskColor,
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Text(
+                    'Nivel de riesgo: $nivelDeRiesgo',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 300, // Ajusta la altura según sea necesario
+                  child: PageView(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.network(
+                          convertedImageUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.broken_image, size: 200);
+                          },
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.broken_image, size: 200);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Recomendaciones:\n',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: riskMessages.map((message) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.check_circle,
+                              color: Colors.blue, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 10),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SizedBox(
+                      width: constraints.maxWidth *
+                          0.4, // Ajusta el ancho del botón al 30% del ancho disponible
+                      height: 40, // Ajusta la altura del botón
+                      child: ButtonWidget(
+                        btnText: 'Cerrar',
+                        onClick: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: Icons.cancel,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteResult(BuildContext context, String docId,
+      String imageUrl, String convertedImageUrl) async {
     try {
       // Eliminar el documento de Firestore
       await FirebaseFirestore.instance
@@ -96,11 +191,14 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
           .delete();
 
       // Eliminar la imagen de Firebase Storage
-      final storageRef = FirebaseStorage.instance.refFromURL(imageUrl,);
+      final storageRef = FirebaseStorage.instance.refFromURL(
+        imageUrl,
+      );
       await storageRef.delete();
 
       // Eliminar la imagen convertida de Firebase Storage
-      final convertedStorageRef = FirebaseStorage.instance.refFromURL(convertedImageUrl);
+      final convertedStorageRef =
+          FirebaseStorage.instance.refFromURL(convertedImageUrl);
       await convertedStorageRef.delete();
 
       if (context.mounted) {
@@ -144,7 +242,8 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
           }
 
           if (userSnapshot.hasError) {
-            return const Center(child: Text('Error al cargar los datos del usuario.'));
+            return const Center(
+                child: Text('Error al cargar los datos del usuario.'));
           }
 
           final userData = userSnapshot.data!;
@@ -172,7 +271,8 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: riskModerateColor, // Usar el color amarillo oscuro
+                          backgroundColor:
+                              riskModerateColor, // Usar el color amarillo oscuro
                           radius: 10,
                         ),
                         const SizedBox(width: 5),
@@ -206,7 +306,8 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No hay resultados disponibles.'));
+                      return const Center(
+                          child: Text('No hay resultados disponibles.'));
                     }
 
                     return ListView.builder(
@@ -217,8 +318,10 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                         final imageUrl = result['image_url'];
                         final maxCrackWidth = result['max_crack_width'];
                         final nivelDeRiesgo = result['nivel_de_riesgo'];
-                        final address = result['direccion']; // Obtener la dirección
-                        final convertedImageUrl = result['converted_image_url']; // Obtener la URL de la imagen convertida
+                        final address =
+                            result['direccion']; // Obtener la dirección
+                        final convertedImageUrl = result[
+                            'converted_image_url']; // Obtener la URL de la imagen convertida
 
                         Color riskColor;
                         switch (nivelDeRiesgo) {
@@ -226,7 +329,8 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                             riskColor = riskLowColor; // Usar el color verde
                             break;
                           case 'Moderado':
-                            riskColor = riskModerateColor; // Usar el color amarillo oscuro
+                            riskColor =
+                                riskModerateColor; // Usar el color amarillo oscuro
                             break;
                           case 'Alto':
                             riskColor = riskHighColor; // Usar el color rojo
@@ -239,7 +343,8 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                           padding: const EdgeInsets.all(10.0),
                           child: GestureDetector(
                             onTap: () {
-                              _showImageDialog(context, imageUrl, convertedImageUrl);
+                              _showImageDialog(context, imageUrl,
+                                  convertedImageUrl, nivelDeRiesgo);
                             },
                             child: Card(
                               elevation: 0,
@@ -265,20 +370,28 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                                   ],
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
                                   child: Column(
                                     children: [
                                       SizedBox(
                                         height: 65,
                                         child: ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 0.0),
                                           trailing: PopupMenuButton<String>(
                                             onSelected: (value) {
                                               if (value == 'delete') {
-                                                _deleteResult(context, docId, imageUrl, convertedImageUrl);
+                                                _deleteResult(
+                                                    context,
+                                                    docId,
+                                                    imageUrl,
+                                                    convertedImageUrl);
                                               }
                                             },
-                                            itemBuilder: (BuildContext context) {
+                                            itemBuilder:
+                                                (BuildContext context) {
                                               return [
                                                 const PopupMenuItem<String>(
                                                   value: 'delete',
@@ -316,39 +429,52 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                                       ),
                                       const Divider(
                                         thickness: 1.4,
-                                        height: 1, // Ajustar la altura del Divider
+                                        height:
+                                            1, // Ajustar la altura del Divider
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                            left: 0.0, right: 0.0, bottom: 16.0, top: 8.0), // Ajustar padding
+                                            left: 0.0,
+                                            right: 0.0,
+                                            bottom: 16.0,
+                                            top: 8.0), // Ajustar padding
                                         child: Row(
                                           children: [
                                             ClipRRect(
-                                              borderRadius: BorderRadius.circular(10.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
                                               child: Image.network(
                                                 imageUrl,
                                                 width: 80,
                                                 height: 80,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  return const Icon(Icons.broken_image, size: 80);
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return const Icon(
+                                                      Icons.broken_image,
+                                                      size: 80);
                                                 },
                                               ),
                                             ),
                                             const SizedBox(width: 10),
                                             Expanded(
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Row(
                                                     children: [
-                                                      Icon(Icons.person, size: 16, color: Colors.grey[800]),
+                                                      Icon(Icons.person,
+                                                          size: 16,
+                                                          color:
+                                                              Colors.grey[800]),
                                                       const SizedBox(width: 5),
                                                       Text(
                                                         userName,
                                                         style: TextStyle(
                                                           fontSize: 14,
-                                                          color: Colors.grey[800],
+                                                          color:
+                                                              Colors.grey[800],
                                                         ),
                                                       ),
                                                     ],
@@ -356,34 +482,51 @@ Future<void> _showImageDialog(BuildContext context, String imageUrl, String conv
                                                   const SizedBox(height: 5),
                                                   Row(
                                                     children: [
-                                                      Icon(Icons.phone, size: 16, color: Colors.grey[800]),
+                                                      Icon(Icons.phone,
+                                                          size: 16,
+                                                          color:
+                                                              Colors.grey[800]),
                                                       const SizedBox(width: 5),
                                                       Text(
                                                         userPhone,
                                                         style: TextStyle(
                                                           fontSize: 14,
-                                                          color: Colors.grey[800],
+                                                          color:
+                                                              Colors.grey[800],
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                   const SizedBox(height: 5),
                                                   Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
-                                                      Icon(Icons.location_on, size: 16, color: Colors.grey[800]),
+                                                      Icon(Icons.location_on,
+                                                          size: 16,
+                                                          color:
+                                                              Colors.grey[800]),
                                                       const SizedBox(width: 5),
                                                       Expanded(
                                                         child: GestureDetector(
-                                                          onTap: _toggleAddressVisibility,
-                                                          onLongPress: () => _copyToClipboard(address),
+                                                          onTap:
+                                                              _toggleAddressVisibility,
+                                                          onLongPress: () =>
+                                                              _copyToClipboard(
+                                                                  address),
                                                           child: Text(
                                                             address,
                                                             style: TextStyle(
                                                               fontSize: 14,
-                                                              color: Colors.grey[800],
+                                                              color: Colors
+                                                                  .grey[800],
                                                             ),
-                                                            overflow: _showFullAddress ? TextOverflow.visible : TextOverflow.ellipsis,
+                                                            overflow: _showFullAddress
+                                                                ? TextOverflow
+                                                                    .visible
+                                                                : TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ),
                                                       ),

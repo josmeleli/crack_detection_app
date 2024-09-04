@@ -96,7 +96,7 @@ class DetectionPageState extends State<DetectionPage> {
 
               // Prepara la imagen para el envío
               var request = http.MultipartRequest(
-                  'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
+                  'POST', Uri.parse('https://web-production-a215.up.railway.app/predict/'));
 
               request.files
                   .add(await http.MultipartFile.fromPath('file', _image!.path));
@@ -245,7 +245,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<bool> _classifyImage(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
+          'POST', Uri.parse('https://web-production-a215.up.railway.app/classify/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
@@ -309,7 +309,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:8000/detectar-circulos/'));
+          'POST', Uri.parse('https://web-production-a215.up.railway.app/detectar-circulos/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
