@@ -11,8 +11,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.flutter_application_1"
-        minSdk = 23
-        targetSdk = 34 // Actualiza según tu versión de SDK
+        minSdkVersion = 23
+        targetSdkVersion = 34 // Actualiza según tu versión de SDK
         versionCode = 1 // Establece un valor fijo para versionCode
         versionName = "1.0" // Establece un valor fijo para versionName
         multiDexEnabled = true

@@ -25,7 +25,11 @@ class HeaderContainer extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 20),
           )),
           Center(
-            child: Image.asset('assets/images/logo.png'),
+            child: SizedBox(
+              width: 150,
+              height: 150,
+              child: Image.asset('assets/images/logo-bg.png'),
+            ),
           ),
         ],
       ),

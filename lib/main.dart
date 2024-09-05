@@ -16,14 +16,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Login App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const SplashPage(), // Usa un widget para manejar la lógica de redirección
+      title: 'Detección de Grietas',
+      home: SplashPage(), // Usa un widget para manejar la lógica de redirección
     );
   }
 }

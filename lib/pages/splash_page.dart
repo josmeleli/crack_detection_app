@@ -12,7 +12,6 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
-    
     super.initState();
     Timer(const Duration(milliseconds: 2000), () {
       Navigator.push(
@@ -20,11 +19,9 @@ class _SplashPageState extends State<SplashPage> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-        return Scaffold(
+    return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -33,7 +30,11 @@ class _SplashPageState extends State<SplashPage> {
               begin: Alignment.topCenter),
         ),
         child: Center(
-          child: Image.asset('assets/images/logo.png'),
+          child: SizedBox(
+            width: 150,
+            height: 150,
+            child: Image.asset('assets/images/logo-bg.png'),
+          ),
         ),
       ),
     );
