@@ -268,7 +268,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             if (_newPasswordController.text !=
                                 _confirmPasswordController.text) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                                const SnackBar(
                                     content:
                                         Text('Las contraseñas no coinciden')),
                               );
@@ -277,7 +277,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                                 content: Text('Contraseña actual incorrecta')),
                           );
                           return;

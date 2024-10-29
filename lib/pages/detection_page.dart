@@ -44,9 +44,13 @@ class DetectionPageState extends State<DetectionPage> {
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .get();
 
+
+      // Obtener los datos del usuario como un mapa
       final userData = userDoc.data() as Map<String, dynamic>;
+
       if (mounted) {
         setState(() {
+          // Cargar el diámetro del usuario si existe, de lo contrario, usa el valor predeterminado
           diametroEnMm = userData['diametroEnMm'] as double? ?? 66.00;
         });
       }
@@ -96,10 +100,12 @@ class DetectionPageState extends State<DetectionPage> {
 
               // Prepara la imagen para el envío
               var request = http.MultipartRequest(
-                  'POST', Uri.parse('http://10.0.2.2:8000/predict/'));
+                  'POST', Uri.parse('http://164.152.254.182/predict/'));
 
               request.files
                   .add(await http.MultipartFile.fromPath('file', _image!.path));
+
+              
 
               var response = await request.send();
               print("Respuesta de la API recibida: ${response.statusCode}");
@@ -244,17 +250,23 @@ class DetectionPageState extends State<DetectionPage> {
 
   Future<bool> _classifyImage(XFile image) async {
     try {
+      // Crear una solicitud multipart para enviar la imagen a la API
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:8000/classify/'));
+          'POST', Uri.parse('http://164.152.254.182/classify/'));
 
+      // Añadir la imagen a la solicitud
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+      
 
       var response = await request.send();
 
       if (response.statusCode == 200) {
+        // Leer la respuesta de la API
         final responseData = await response.stream.bytesToString();
         final decodedData = json.decode(responseData);
 
+        // Verifica si la respuesta contiene una predicción de grieta
         if (decodedData.containsKey('prediction') &&
             decodedData['prediction'] == 'Crack Detected') {
           return true;
@@ -309,21 +321,29 @@ class DetectionPageState extends State<DetectionPage> {
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:8000/detectar-circulos/'));
+          'POST', Uri.parse('http://164.152.254.182/detectar-circulos/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+      
 
       var response = await request.send();
 
       if (response.statusCode == 200) {
+        // lee los datos de manera secuencial
         final responseData = await response.stream.bytesToString();
+        // decodifica los datos JSON a un Map
         final decodedData = json.decode(responseData);
 
+        // Verifica si la respuesta contiene un mensaje con un número
         if (decodedData.containsKey('message') &&
             decodedData['message'] != null) {
           final message = decodedData['message'];
+
+          // Extrae el número del mensaje usando una expresión regular, r= string sin procesar
           final regex = RegExp(r'(\d+)');
           final match = regex.firstMatch(message);
+
           if (match != null) {
             return int.parse(match.group(0)!);
           }
@@ -346,6 +366,7 @@ class DetectionPageState extends State<DetectionPage> {
 
       final storageRef = FirebaseStorage.instance.ref().child('users/$userId/$uniqueImageName');
       final uploadTask = storageRef.putFile(image);
+      //espera a que la subida se compete y devuelve un snapshot
       final snapshot = await uploadTask.whenComplete(() => {});
       final downloadUrl = await snapshot.ref.getDownloadURL();
       print("Imagen subida a Firebase Storage: $downloadUrl");
