@@ -311,242 +311,214 @@ class _ResultsPageState extends State<ResultsPage> {
                     }
 
                     return ListView.builder(
-                      itemCount: snapshot.data!.docs.length,
-                      itemBuilder: (context, index) {
-                        final result = snapshot.data!.docs[index];
-                        final docId = result.id;
-                        final imageUrl = result['image_url'];
-                        final maxCrackWidth = result['max_crack_width'];
-                        final nivelDeRiesgo = result['nivel_de_riesgo'];
-                        final address =
-                            result['direccion']; // Obtener la dirección
-                        final convertedImageUrl = result[
-                            'converted_image_url']; // Obtener la URL de la imagen convertida
+  itemCount: snapshot.data!.docs.length,
+  itemBuilder: (context, index) {
+    final result = snapshot.data!.docs[index];
+    final docId = result.id;
+    final imageUrl = result['image_url'];
+    final maxCrackWidth = result['max_crack_width'];
+    final nivelDeRiesgo = result['nivel_de_riesgo'];
+    final address = result['direccion']; // Obtener la dirección
+    final convertedImageUrl = result['converted_image_url']; // Obtener la URL de la imagen convertida
 
-                        Color riskColor;
-                        switch (nivelDeRiesgo) {
-                          case 'Bajo':
-                            riskColor = riskLowColor; // Usar el color verde
-                            break;
-                          case 'Moderado':
-                            riskColor =
-                                riskModerateColor; // Usar el color amarillo oscuro
-                            break;
-                          case 'Alto':
-                            riskColor = riskHighColor; // Usar el color rojo
-                            break;
-                          default:
-                            riskColor = riskDefaultColor; // Usar el color gris
-                        }
+    Color riskColor;
+    switch (nivelDeRiesgo) {
+      case 'Bajo':
+        riskColor = riskLowColor; // Usar el color verde
+        break;
+      case 'Moderado':
+        riskColor = riskModerateColor; // Usar el color amarillo oscuro
+        break;
+      case 'Alto':
+        riskColor = riskHighColor; // Usar el color rojo
+        break;
+      default:
+        riskColor = riskDefaultColor; // Usar el color gris
+    }
 
-                        return Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              _showImageDialog(context, imageUrl,
-                                  convertedImageUrl, nivelDeRiesgo);
-                            },
-                            child: Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    top: BorderSide(
-                                      color: riskColor,
-                                      width: 5.0,
-                                    ),
-                                  ),
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
-                                      spreadRadius: 1,
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20.0),
-                                  child: Column(
-                                    children: [
-                                      SizedBox(
-                                        height: 65,
-                                        child: ListTile(
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 0.0),
-                                          trailing: PopupMenuButton<String>(
-                                            onSelected: (value) {
-                                              if (value == 'delete') {
-                                                _deleteResult(
-                                                    context,
-                                                    docId,
-                                                    imageUrl,
-                                                    convertedImageUrl);
-                                              }
-                                            },
-                                            itemBuilder:
-                                                (BuildContext context) {
-                                              return [
-                                                const PopupMenuItem<String>(
-                                                  value: 'delete',
-                                                  child: Text('Borrar'),
-                                                ),
-                                              ];
-                                            },
-                                          ),
-                                          title: RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: 'Nivel de riesgo: ',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey[800],
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: nivelDeRiesgo,
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: riskColor,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          subtitle: Text(
-                                            'Ancho de grieta: $maxCrackWidth mm',
-                                          ),
-                                        ),
-                                      ),
-                                      const Divider(
-                                        thickness: 1.4,
-                                        height:
-                                            1, // Ajustar la altura del Divider
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 0.0,
-                                            right: 0.0,
-                                            bottom: 16.0,
-                                            top: 8.0), // Ajustar padding
-                                        child: Row(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              child: Image.network(
-                                                imageUrl,
-                                                width: 80,
-                                                height: 80,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return const Icon(
-                                                      Icons.broken_image,
-                                                      size: 80);
-                                                },
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.person,
-                                                          size: 16,
-                                                          color:
-                                                              Colors.grey[800]),
-                                                      const SizedBox(width: 5),
-                                                      Text(
-                                                        userName,
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          color:
-                                                              Colors.grey[800],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.phone,
-                                                          size: 16,
-                                                          color:
-                                                              Colors.grey[800]),
-                                                      const SizedBox(width: 5),
-                                                      Text(
-                                                        userPhone,
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          color:
-                                                              Colors.grey[800],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Icon(Icons.location_on,
-                                                          size: 16,
-                                                          color:
-                                                              Colors.grey[800]),
-                                                      const SizedBox(width: 5),
-                                                      Expanded(
-                                                        child: GestureDetector(
-                                                          onTap:
-                                                              _toggleAddressVisibility,
-                                                          onLongPress: () =>
-                                                              _copyToClipboard(
-                                                                  address),
-                                                          child: Text(
-                                                            address,
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              color: Colors
-                                                                  .grey[800],
-                                                            ),
-                                                            overflow: _showFullAddress
-                                                                ? TextOverflow
-                                                                    .visible
-                                                                : TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: GestureDetector(
+        onTap: () {
+          _showImageDialog(context, imageUrl, convertedImageUrl, nivelDeRiesgo);
+        },
+        child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: riskColor,
+                  width: 5.0,
+                ),
+              ),
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 65,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 0.0),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'delete') {
+                            _deleteResult(context, docId, imageUrl, convertedImageUrl);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: Text('Borrar'),
+                            ),
+                          ];
+                        },
+                      ),
+                      title: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Nivel de riesgo: ',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
                               ),
                             ),
+                            TextSpan(
+                              text: nivelDeRiesgo,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: riskColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Ancho de grieta: $maxCrackWidth mm',
+                      ),
+                    ),
+                  ),
+                  const Divider(
+                    thickness: 1.4,
+                    height: 1, // Ajustar la altura del Divider
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 0.0, right: 0.0, bottom: 16.0, top: 8.0), // Ajustar padding
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: Image.network(
+                            imageUrl,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.broken_image, size: 80);
+                            },
                           ),
-                        );
-                      },
-                    );
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.person, size: 16, color: Colors.grey[800]),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    userName,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.phone, size: 16, color: Colors.grey[800]),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    userPhone,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.location_on, size: 16, color: Colors.grey[800]),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: _toggleAddressVisibility,
+                                      onLongPress: () => _copyToClipboard(address),
+                                      child: Text(
+                                        address,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[800],
+                                        ),
+                                        overflow: _showFullAddress ? TextOverflow.visible : TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.format_list_numbered, size: 16, color: Colors.grey[800]),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'Resultado N° ${snapshot.data!.docs.length - index}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+);
                   },
                 ),
               ),
