@@ -100,7 +100,7 @@ class DetectionPageState extends State<DetectionPage> {
 
               // Prepara la imagen para el envío
               var request = http.MultipartRequest(
-                  'POST', Uri.parse('http://164.152.254.182/predict/'));
+                  'POST', Uri.parse('https://r964z9v6-8000.brs.devtunnels.ms/predict/'));
 
               request.files
                   .add(await http.MultipartFile.fromPath('file', _image!.path));
@@ -252,7 +252,7 @@ class DetectionPageState extends State<DetectionPage> {
     try {
       // Crear una solicitud multipart para enviar la imagen a la API
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://164.152.254.182/classify/'));
+          'POST', Uri.parse('https://r964z9v6-8000.brs.devtunnels.ms/classify/'));
 
       // Añadir la imagen a la solicitud
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
@@ -321,7 +321,7 @@ class DetectionPageState extends State<DetectionPage> {
   Future<int?> _detectCircleDiameter(XFile image) async {
     try {
       var request = http.MultipartRequest(
-          'POST', Uri.parse('http://164.152.254.182/detectar-circulos/'));
+          'POST', Uri.parse('https://r964z9v6-8000.brs.devtunnels.ms/detectar-circulos/'));
 
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
