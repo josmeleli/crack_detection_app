@@ -53,7 +53,7 @@ void _showEditDiametroDialog() {
     builder: (context) {
       return AlertDialog(
         title: const Text(
-          'Diámetro del Círculo Rojo en mm',
+          'Red Circle Diameter in mm',
           style: TextStyle(
             fontSize: 16, // Ajusta el tamaño de la fuente según sea necesario
           ),
@@ -62,7 +62,7 @@ void _showEditDiametroDialog() {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Este valor representa el diámetro real del círculo rojo en milímetros y se utilizará como referencia para calcular el ancho máximo de las grietas en la imagen.',
+              'This value represents the actual diameter of the red circle in millimeters and will be used as a reference to calculate the maximum width of the cracks in the image.',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -71,7 +71,7 @@ void _showEditDiametroDialog() {
             const SizedBox(height: 10), // Espacio entre el texto y el input
             textInput(
               controller: _diametroController,
-              hint: 'Diámetro en mm',
+              hint: 'Diameter in mm',
               icon: Icons.straighten,
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
@@ -87,7 +87,7 @@ void _showEditDiametroDialog() {
                 child: SizedBox(
                   height: 40, // Ajusta la altura según sea necesario
                   child: ButtonWidget(
-                    btnText: 'Cancelar',
+                    btnText: 'Close',
                     onClick: () {
                       Navigator.of(context).pop();
                     },
@@ -101,7 +101,7 @@ void _showEditDiametroDialog() {
                 child: SizedBox(
                   height: 40, // Ajusta la altura según sea necesario
                   child: ButtonWidget(
-                    btnText: 'Guardar',
+                    btnText: 'Save',
                     onClick: () async {
                       final newDiametro = double.parse(_diametroController.text);
 
@@ -137,7 +137,7 @@ void _showEditDiametroDialog() {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Perfil',
+        title: 'Profile',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -249,7 +249,7 @@ void _showEditDiametroDialog() {
                     ),
                     const SizedBox(height: 20),
                     ButtonWidget(
-                      btnText: 'Editar Perfil',
+                      btnText: 'Edit Profile',
                       onClick: () async {
                         final result = await Navigator.of(context).push(
                           MaterialPageRoute(
@@ -269,7 +269,7 @@ void _showEditDiametroDialog() {
                     ),
                     const SizedBox(height: 10),
                     ButtonWidget(
-                      btnText: 'Cerrar Sesión',
+                      btnText: 'Logout',
                       onClick: () {
                         // Acción de cerrar sesión
                         FirebaseAuth.instance.signOut();

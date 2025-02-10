@@ -24,10 +24,10 @@ class NavigationMenu extends StatelessWidget {
             controller.selectedIndex.value = index;
           },
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.info), label: 'Instrucciones'),
-            NavigationDestination(icon: Icon(Icons.add), label: 'Detectar'),
-            NavigationDestination(icon: Icon(Icons.assessment), label: 'Resultados'),
-            NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
+            NavigationDestination(icon: Icon(Icons.info), label: 'Instructions'),
+            NavigationDestination(icon: Icon(Icons.add), label: 'Detect'),
+            NavigationDestination(icon: Icon(Icons.assessment), label: 'Results'),
+            NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           ],
           indicatorColor: secondaryColor,
           

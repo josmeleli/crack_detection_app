@@ -22,12 +22,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   void handleForgotPassword() {
     
     // Acción al hacer clic en el botón
-    LoadingDialog.showLoadingDialog(context, 'Enviando correo...');
+    LoadingDialog.showLoadingDialog(context, 'Sending mail...');
     AuthenticationService().forgotPassword(email: _email.text).then((status) {
       LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
         Fluttertoast.showToast(
-            msg: "Correo enviado, revisa tu bandeja de entrada");
+            msg: "Email sent, check your inbox");
       } else {
         final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
         Fluttertoast.showToast(msg: errorMsg);
@@ -39,7 +39,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Cambiar contraseña',
+        title: 'Change Password',
         showLogoutButton: false,
         automaticallyImplyLeading: true,
       ),
@@ -51,24 +51,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             children: <Widget>[
               const SizedBox(height: 50),
               const Text(
-                'Olvidé mi contraseña',
+                'Forgot password',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               const Text(
-                'Por favor, ingrese su correo electrónico. Le enviaremos un enlace para restablecer su contraseña.',
+                'Please enter your email address. We will send you a link to reset your password.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               textInput(
                 controller: _email,
-                hint: "Correo",
+                hint: "Email",
                 icon: Icons.email,
                 validator: emailValidator,
               ),
               const SizedBox(height: 20),
               ButtonWidget(
-                btnText: 'Enviar',
+                btnText: 'Send',
                 onClick: () {
                   if (_formKey.currentState!.validate()) {
                     handleForgotPassword();

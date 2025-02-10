@@ -161,7 +161,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Editar Perfil',
+        title: 'Edit Profile',
         showLogoutButton: false,
         automaticallyImplyLeading: true,
       ),
@@ -218,35 +218,35 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 const SizedBox(height: 20),
                 textInput(
                   controller: _nameController,
-                  hint: 'Nombre',
+                  hint: 'Name',
                   icon: Icons.person,
                 ),
                 textInput(
                   controller: _phoneController,
-                  hint: 'Teléfono',
+                  hint: 'Phone',
                   icon: Icons.phone,
                 ),
                 textInput(
                   controller: _currentPasswordController,
-                  hint: 'Contraseña Actual',
+                  hint: 'Current Password',
                   icon: Icons.lock,
                   obscureText: true,
                 ),
                 textInput(
                   controller: _newPasswordController,
-                  hint: 'Nueva Contraseña',
+                  hint: 'New Password',
                   icon: Icons.lock,
                   obscureText: true,
                 ),
                 textInput(
                   controller: _confirmPasswordController,
-                  hint: 'Confirmar Nueva Contraseña',
+                  hint: 'Confirm the new password',
                   icon: Icons.lock,
                   obscureText: true,
                 ),
                 const SizedBox(height: 20),
                 ButtonWidget(
-                  btnText: 'Guardar Cambios',
+                  btnText: 'Save Changes',
                   onClick: () async {
                     if (_formKey.currentState!.validate()) {
                       // Reauthenticate the user with the current password

@@ -28,7 +28,7 @@ class _RegPageState extends State<RegPage> {
   final _formKey = GlobalKey<FormState>();
 
   void handleSignUp() {
-    LoadingDialog.showLoadingDialog(context, 'Registrando...');
+    LoadingDialog.showLoadingDialog(context, 'Registering...');
     AuthenticationService()
         .signUpWithEmailAndPassword(
       name: _name.text,
@@ -40,7 +40,7 @@ class _RegPageState extends State<RegPage> {
         .then((status) {
       LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
-        Fluttertoast.showToast(msg: "Registro exitoso");
+        Fluttertoast.showToast(msg: "Registration successful");
       } else {
         final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
         Fluttertoast.showToast(msg: errorMsg);
@@ -58,20 +58,20 @@ class _RegPageState extends State<RegPage> {
             padding: const EdgeInsets.only(bottom: 20),
             child: Column(
               children: <Widget>[
-                const HeaderContainer("Registrarse"),
+                const HeaderContainer("Register"),
                 Container(
                   margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
-                      textInput(controller: _name ,hint: "Nombre Completo", icon: Icons.person, validator: nameValidator,),
-                      textInput(controller: _email ,hint: "Correo", icon: Icons.email, validator: emailValidator, inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\s"))]),
-                      textInput(controller: _phone ,hint: "Teléfono", icon: Icons.call, validator: phoneValidator, inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)]),
-                      textInput(controller: _password ,hint: "Contraseña", icon: Icons.vpn_key, validator: passwordValidator, obscureText: true),
-                      textInput(controller: _confirmPassword,hint: "Confirmar Contraseña", icon: Icons.vpn_key, validator: (text) => confirmPasswordValidator(text, _password.text), obscureText: true),
+                      textInput(controller: _name ,hint: "Full Name", icon: Icons.person, validator: nameValidator,),
+                      textInput(controller: _email ,hint: "Email", icon: Icons.email, validator: emailValidator, inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r"\s"))]),
+                      textInput(controller: _phone ,hint: "Phone", icon: Icons.call, validator: phoneValidator, inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)]),
+                      textInput(controller: _password ,hint: "Password", icon: Icons.vpn_key, validator: passwordValidator, obscureText: true),
+                      textInput(controller: _confirmPassword,hint: "Confirm Passpword", icon: Icons.vpn_key, validator: (text) => confirmPasswordValidator(text, _password.text), obscureText: true),
                       const SizedBox(height: 20),
                       ButtonWidget(
-                        btnText: 'Registrar',
+                        btnText: 'Register',
                         onClick: () {
                           if (_formKey.currentState!.validate()) {
                             handleSignUp();
@@ -82,11 +82,11 @@ class _RegPageState extends State<RegPage> {
                       RichText(
                         text: TextSpan(children: [
                           const TextSpan(
-                            text: "¿Ya lo recuerdas?",
+                            text: "Already have an account?",
                             style: TextStyle(color: Colors.black),
                           ),
                           TextSpan(
-                            text: " Iniciar Sesión",
+                            text: " Login",
                             style: TextStyle(color: primaryColor),
                             recognizer: TapGestureRecognizer()
                               ..onTap = widget.onPressed,

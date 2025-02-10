@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   void handleLogin() {
-    LoadingDialog.showLoadingDialog(context, 'Iniciando sesión...');
+    LoadingDialog.showLoadingDialog(context, 'Logging in...');
 
     AuthenticationService()
         .loginWithEmailAndPassword(
@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
         .then((status) {
       LoadingDialog.hideLoadingDialog(context);
       if (status == AuthResultStatus.successful) {
-        Fluttertoast.showToast(msg: "Inicio de sesión exitoso");
+        Fluttertoast.showToast(msg: "Login successful");
       } else {
         final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
         Fluttertoast.showToast(msg: errorMsg);
@@ -53,20 +53,20 @@ class _LoginPageState extends State<LoginPage> {
           key: _formKey,
           child: Column(
             children: <Widget>[
-              const HeaderContainer("Iniciar Sesión"),
+              const HeaderContainer("Login"),
               Container(
                 margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
                 child: Column(
                   children: <Widget>[
                     textInput(
                       controller: _email,
-                      hint: "Correo",
+                      hint: "Email",
                       icon: Icons.email,
                       validator: emailValidator,
                     ),
                     textInput(
                       controller: _password,
-                      hint: "Contraseña",
+                      hint: "Password",
                       icon: Icons.vpn_key,
                       validator: passwordValidator,
                       obscureText: true,
@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                           );
                         },
                         child: Text(
-                          "Olvidaste tu contraseña?",
+                          "Forget your password?",
                           style: TextStyle(color: primaryColor),
                         ),
                       ),
@@ -96,17 +96,17 @@ class _LoginPageState extends State<LoginPage> {
                           handleLogin();
                         }
                       },
-                      btnText: 'Iniciar Sesión',
+                      btnText: 'Login',
                     ),
                     const SizedBox(height: 20),
                     RichText(
                       text: TextSpan(children: [
                         const TextSpan(
-                          text: "No tienes una cuenta?",
+                          text: "Don't have an account?",
                           style: TextStyle(color: Colors.black),
                         ),
                         TextSpan(
-                          text: " Registrate",
+                          text: " Sign up",
                           style: TextStyle(color: primaryColor),
                           recognizer: TapGestureRecognizer()
                             ..onTap = widget.onPressed,

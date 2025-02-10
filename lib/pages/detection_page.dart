@@ -27,9 +27,9 @@ class DetectionPageState extends State<DetectionPage> {
   double diametroEnMm = 66.00;
 
   // Definición de los niveles de riesgo
-  final double riesgoBajoMax = 2.00;
-  final double riesgoModeradoMax = 5.00;
-  final double riesgoAltoMax = 15.00;
+  final double riesgoBajoMax = 0.70;
+  final double riesgoModeradoMax = 2.00;
+  final double riesgoAltoMax = 5.00;
 
   @override
   void initState() {
@@ -419,7 +419,7 @@ class DetectionPageState extends State<DetectionPage> {
 
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Detectar',
+        title: 'Crack Detection',
       ),
       body: Center(
         child: Padding(
@@ -439,7 +439,7 @@ class DetectionPageState extends State<DetectionPage> {
                         height: containerWidth,
                         color: Colors.grey.withOpacity(0.1),
                         child: _image == null
-                            ? const Center(child: Text('Imagen aquí'))
+                            ? const Center(child: Text('No image selected'))
                             : Image.file(
                                 File(_image!.path),
                                 fit: BoxFit.cover,
@@ -456,7 +456,7 @@ class DetectionPageState extends State<DetectionPage> {
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
                   onClick: _sendImageToAPI,
-                  btnText: 'Detectar',
+                  btnText: 'Crack Detection',
                   icon: Icons.broken_image,
                 ),
               ),
@@ -466,7 +466,7 @@ class DetectionPageState extends State<DetectionPage> {
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
                   onClick: _openCamera,
-                  btnText: 'Abrir Cámara',
+                  btnText: 'Open Camera',
                   icon: Icons.camera_alt,
                 ),
               ),
@@ -476,7 +476,7 @@ class DetectionPageState extends State<DetectionPage> {
                 margin: const EdgeInsets.only(bottom: 8.0),
                 child: ButtonWidget(
                   onClick: _pickImage,
-                  btnText: 'Subir Imagen',
+                  btnText: 'Upload Image',
                   icon: Icons.upload_file,
                 ),
               ),

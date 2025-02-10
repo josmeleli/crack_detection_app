@@ -9,7 +9,7 @@ class InfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Instrucciones',
+        title: 'Instructions',
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -20,27 +20,27 @@ class InfoPage extends StatelessWidget {
               children: [
                 _buildStepCard(
                   context,
-                  '1. Primero, ve a tu perfil y asegúrate de configurar el diámetro del círculo rojo en milímetros (mm).',
+                  "1. First, go to your profile and make sure to set the red circle's diameter in millimeters (mm).",
                   'assets/images/paso-1-bg.png',
                 ),
                 _buildStepCard(
                   context,
-                  '2. Luego, accede a la sección "Detectar", acepta los permisos necesarios y captura o sube una imagen de la grieta.',
+                  '2. Then, go to the "Detect" section, accept the necessary permissions, and capture or upload an image of the crack.',
                   'assets/images/paso-2-bg.png',
                 ),
                 _buildStepCard(
                   context,
-                  '3. Una vez que la imagen se haya cargado (asegúrate de que sea nítida), podrás presionar el botón "Detectar".',
+                  '3. Once the image has been uploaded (make sure it is clear), you can press the "Detect" button.',
                   'assets/images/paso-3-bg.png',
                 ),
                 _buildStepCard(
                   context,
-                  '4. Finalmente, los detalles del riesgo de la grieta se guardarán en la sección de resultados.',
+                  '4. Finally, the crack risk details will be saved in the results section.',
                   'assets/images/paso-4-bg.png',
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Importante: La detección se clasifica en niveles de riesgo, de alto a bajo, según el ancho de la grieta en milímetros (mm).',
+                  'Important: The detection is classified into risk levels, from high to low, based on the crack width in millimeters (mm).',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

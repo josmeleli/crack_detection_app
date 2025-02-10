@@ -37,22 +37,22 @@ class _ResultsPageState extends State<ResultsPage> {
     switch (nivelDeRiesgo) {
       case 'Bajo':
         riskMessages = [
-          'Observa estas grietas ocasionalmente para asegurarte de que no se agranden.',
-          'Si la grieta está en una pared exterior, considera usar un sellador para prevenir daños por humedad.'
+          'Observe these cracks occasionally to ensure they do not enlarge.',
+          'If the crack is on an exterior wall, consider using a sealant to prevent moisture damage.'
         ];
         riskColor = riskLowColor;
         break;
       case 'Moderado':
         riskMessages = [
-          'Sería recomendable que un profesional revise las grietas para entender la causa y determinar si se necesita alguna reparación.',
-          'Monitorea estas grietas mensualmente para ver si están creciendo.'
+          'It is advisable for a professional to inspect the cracks to understand the cause and determine if any repairs are needed.',
+          'Monitor these cracks monthly to see if they are growing.'
         ];
         riskColor = riskModerateColor;
         break;
       case 'Alto':
         riskMessages = [
-          'Llama a un experto lo antes posible para evaluar la situación y determinar las reparaciones necesarias.',
-          'Evita usar o poner peso en la zona afectada hasta que un profesional confirme que es seguro.'
+          'Call an expert as soon as possible to assess the situation and determine the necessary repairs.',
+          'Avoid using or putting weight on the affected area until a professional confirms it is safe.'
         ];
         riskColor = riskHighColor;
         break;
@@ -80,7 +80,7 @@ class _ResultsPageState extends State<ResultsPage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Text(
-                    'Nivel de riesgo: $nivelDeRiesgo',
+                    'Risk level: $nivelDeRiesgo',
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
@@ -122,7 +122,7 @@ class _ResultsPageState extends State<ResultsPage> {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Recomendaciones:\n',
+                        text: 'Recommendations:\n',
                         style: TextStyle(
                             fontSize: 16,
                             color: primaryColor,
@@ -162,7 +162,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           0.4, // Ajusta el ancho del botón al 30% del ancho disponible
                       height: 40, // Ajusta la altura del botón
                       child: ButtonWidget(
-                        btnText: 'Cerrar',
+                        btnText: 'Close',
                         onClick: () {
                           Navigator.of(context).pop();
                         },
@@ -232,7 +232,7 @@ class _ResultsPageState extends State<ResultsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Resultados',
+        title: 'Results',
       ),
       body: FutureBuilder<Map<String, String>>(
         future: _getUserData(),
@@ -265,7 +265,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           radius: 10,
                         ),
                         const SizedBox(width: 5),
-                        const Text('Bajo'),
+                        const Text('Low'),
                       ],
                     ),
                     Row(
@@ -276,7 +276,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           radius: 10,
                         ),
                         const SizedBox(width: 5),
-                        const Text('Moderado'),
+                        const Text('Moderate'),
                       ],
                     ),
                     Row(
@@ -286,7 +286,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           radius: 10,
                         ),
                         const SizedBox(width: 5),
-                        const Text('Alto'),
+                        const Text('High'),
                       ],
                     ),
                   ],
@@ -383,7 +383,7 @@ class _ResultsPageState extends State<ResultsPage> {
                           return [
                             const PopupMenuItem<String>(
                               value: 'delete',
-                              child: Text('Borrar'),
+                              child: Text('Delete'),
                             ),
                           ];
                         },
@@ -392,7 +392,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: 'Nivel de riesgo: ',
+                              text: 'Risk Level: ',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -411,7 +411,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         ),
                       ),
                       subtitle: Text(
-                        'Ancho de grieta: $maxCrackWidth mm',
+                        'Crack Width: $maxCrackWidth mm',
                       ),
                     ),
                   ),
@@ -496,7 +496,7 @@ class _ResultsPageState extends State<ResultsPage> {
                                   Icon(Icons.format_list_numbered, size: 16, color: Colors.grey[800]),
                                   const SizedBox(width: 5),
                                   Text(
-                                    'Resultado N° ${snapshot.data!.docs.length - index}',
+                                    'Result N° ${snapshot.data!.docs.length - index}',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[800],
